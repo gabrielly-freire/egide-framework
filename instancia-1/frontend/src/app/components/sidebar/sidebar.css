@@ -1,0 +1,41 @@
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-primary);
+  opacity: 0.9;
+}
+
+.nav-item i {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.logout-item {
+  color: #ef4444;
+}
+
+.logout-item i {
+  color: #ef4444;
+}
+
+.active-link {
+  background-color: #6365f12a !important;
+  color: #6366f1 !important;
+}
+
+.sidebar-version {
+  font-size: 10px;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: 0.08em;
+}
