@@ -3,6 +3,7 @@ package br.imd.ufrn.core.web;
 import br.imd.ufrn.core.exception.DuplicateProtocolException;
 import br.imd.ufrn.core.exception.EvaluationAlreadyExistsException;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
+import br.imd.ufrn.core.exception.ResponsibleAssignmentNotFoundException;
 import br.imd.ufrn.core.exception.ServiceEvaluationNotFoundException;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,6 +47,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleEvaluationAlreadyExists(EvaluationAlreadyExistsException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         detail.setTitle("Avaliação já registrada");
+        return detail;
+    }
+
+    @ExceptionHandler(ResponsibleAssignmentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleResponsibleAssignmentNotFound(ResponsibleAssignmentNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        detail.setTitle("Designação não encontrada");
         return detail;
     }
 
