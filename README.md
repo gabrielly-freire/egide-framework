@@ -4,7 +4,7 @@ Framework modular para sistemas de ouvidoria, composto por pontos fixos (comport
 
 ## Core
 
-[Backend](./core)
+[Backend](backend/core)
 
 ### Pontos fixos
 
@@ -33,7 +33,7 @@ Configuráveis por instância, adaptando o framework ao contexto de cada organiz
 
 Usado por empresas privadas para receber denúncias internas.
 
-[Frontend](./instancia-1/frontend) | [Backend](./instancia-1/backend)
+[Frontend](frontend) | [Backend](backend/instancia-1/backend)
 
 | Ponto Variável         | Configuração                                                                                        |
 |------------------------|-----------------------------------------------------------------------------------------------------|
@@ -47,7 +47,7 @@ Usado por empresas privadas para receber denúncias internas.
 
 Usado por universidades para receber manifestações de alunos, professores e servidores.
 
-[Frontend](./instancia-2/frontend) | [Backend](./instancia-2/backend)
+[Frontend](backend/instancia-2/frontend) | [Backend](backend/instancia-2/backend)
 
 | Ponto Variável         | Configuração                                                                                   |
 |------------------------|------------------------------------------------------------------------------------------------|
@@ -61,7 +61,7 @@ Usado por universidades para receber manifestações de alunos, professores e se
 
 Usado por órgãos públicos para manifestações de cidadãos (ex.: Ouvidoria Geral do SUS).
 
-[Frontend](./instancia-3/frontend) | [Backend](./instancia-3/backend)
+[Frontend](backend/instancia-3/frontend) | [Backend](backend/instancia-3/backend)
 
 | Ponto Variável         | Configuração                                                                                                           |
 |------------------------|------------------------------------------------------------------------------------------------------------------------|

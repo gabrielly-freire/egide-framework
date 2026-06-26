@@ -15,7 +15,7 @@ services:
       timeout: 5s
       retries: 5
   app:
-    build: ..
+    build: ../..
     container_name: egide_app
     ports:
       - '8080:8080'

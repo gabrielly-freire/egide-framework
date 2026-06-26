@@ -9,6 +9,6 @@
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "instancia1/src/**/*.ts"
   ]
 }
