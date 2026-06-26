@@ -101,6 +101,59 @@ Universidades · alunos, professores e servidores · `backend/instancia-2/`
 
 ---
 
+## Core — Módulos implementados
+
+### Registro de Manifestações
+
+**O Core faz:**
+- Cadastrar, consultar, atualizar e listar manifestações
+- Gerar número de protocolo único (formato `YYYY-{10 chars UUID}`)
+- Manter estado inicial (`REGISTERED`)
+- Exclusão lógica (`active = false`)
+- Controlar `createdAt` / `updatedAt` via `@PrePersist` / `@PreUpdate`
+
+**O Core não faz:**
+- Transições de status além de `REGISTERED` (workflow é ponto variável)
+- Anonimização, categorização por IA, designação de responsável (pontos variáveis)
+
+**Estrutura de pacotes:**
+```
+core/src/main/java/br/imd/ufrn/egide/core/
+├── shared/
+│   ├── domain/BaseEntity.java           ← id, createdAt, updatedAt, active
+│   └── exception/CoreException.java     ← base abstrata para exceções do Core
+└── manifestation/
+    ├── domain/
+    │   ├── Manifestation.java
+    │   └── ManifestationStatus.java     ← REGISTERED, IN_REVIEW, RESOLVED, CLOSED
+    ├── application/
+    │   ├── dto/                         ← CreateManifestationRequest, UpdateManifestationRequest, ManifestationResponse
+    │   ├── mapper/ManifestationMapper.java
+    │   └── service/
+    │       ├── ManifestationService.java        ← interface
+    │       └── ManifestationServiceImpl.java
+    ├── exception/
+    │   ├── ManifestationNotFoundException.java
+    │   └── DuplicateProtocolException.java
+    └── infrastructure/
+        ├── persistence/ManifestationRepository.java
+        └── web/
+            ├── ManifestationController.java     ← /v1/manifestations
+            └── GlobalExceptionHandler.java
+```
+
+**Endpoints:**
+| Método | Path | Status |
+|---|---|---|
+| POST | `/v1/manifestations` | 201 |
+| GET | `/v1/manifestations/{id}` | 200 |
+| GET | `/v1/manifestations/protocol/{protocolNumber}` | 200 |
+| GET | `/v1/manifestations?page&size&sort&direction` | 200 |
+| PUT | `/v1/manifestations/{id}` | 200 |
+| DELETE | `/v1/manifestations/{id}` | 204 |
+
+---
+
 ## Convenções de código
 
 - **Injeção por construtor** via `@RequiredArgsConstructor` (Lombok) com campos `final`
