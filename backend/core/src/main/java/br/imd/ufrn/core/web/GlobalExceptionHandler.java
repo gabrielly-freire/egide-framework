@@ -1,5 +1,6 @@
 package br.imd.ufrn.core.web;
 
+import br.imd.ufrn.core.exception.DecisionRecordNotFoundException;
 import br.imd.ufrn.core.exception.DuplicateProtocolException;
 import br.imd.ufrn.core.exception.EvaluationAlreadyExistsException;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
@@ -47,6 +48,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleEvaluationAlreadyExists(EvaluationAlreadyExistsException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         detail.setTitle("Avaliação já registrada");
+        return detail;
+    }
+
+    @ExceptionHandler(DecisionRecordNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleDecisionRecordNotFound(DecisionRecordNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        detail.setTitle("Decisão/parecer não encontrado");
         return detail;
     }
 
