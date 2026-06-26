@@ -1,5 +1,6 @@
 package br.imd.ufrn.core.web;
 
+import br.imd.ufrn.core.exception.AuditEntryNotFoundException;
 import br.imd.ufrn.core.exception.DecisionRecordNotFoundException;
 import br.imd.ufrn.core.exception.DuplicateProtocolException;
 import br.imd.ufrn.core.exception.EvaluationAlreadyExistsException;
@@ -48,6 +49,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleEvaluationAlreadyExists(EvaluationAlreadyExistsException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         detail.setTitle("Avaliação já registrada");
+        return detail;
+    }
+
+    @ExceptionHandler(AuditEntryNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleAuditEntryNotFound(AuditEntryNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        detail.setTitle("Registro de auditoria não encontrado");
         return detail;
     }
 
