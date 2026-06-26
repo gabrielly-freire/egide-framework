@@ -1,7 +1,9 @@
 package br.imd.ufrn.core.web;
 
 import br.imd.ufrn.core.exception.DuplicateProtocolException;
+import br.imd.ufrn.core.exception.EvaluationAlreadyExistsException;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
+import br.imd.ufrn.core.exception.ServiceEvaluationNotFoundException;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,22 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleDuplicateProtocol(DuplicateProtocolException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         detail.setTitle("Protocolo duplicado");
+        return detail;
+    }
+
+    @ExceptionHandler(ServiceEvaluationNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleServiceEvaluationNotFound(ServiceEvaluationNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        detail.setTitle("Avaliação não encontrada");
+        return detail;
+    }
+
+    @ExceptionHandler(EvaluationAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ProblemDetail handleEvaluationAlreadyExists(EvaluationAlreadyExistsException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        detail.setTitle("Avaliação já registrada");
         return detail;
     }
 
