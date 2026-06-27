@@ -1,0 +1,91 @@
+@startuml workflow-template
+
+title Ponto variável — Etapas do Workflow (Template Method)
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "br.imd.ufrn.core.workflow" <<Core>> #E8F4FD {
+
+    abstract class WorkflowTemplate {
+        + {final} advance(manifestation: Manifestation): WorkflowStepResult
+        + {final} appeal(manifestation: Manifestation): WorkflowStepResult
+        # {final} isTerminal(status: ManifestationStatus): boolean
+        ..
+        # {abstract} resolveNextStatus(current: ManifestationStatus): ManifestationStatus
+        # {abstract} resolveAppealStatus(current: ManifestationStatus): ManifestationStatus
+        # {abstract} isAppealAllowed(status: ManifestationStatus): boolean
+        # {abstract} deadlineFor(status: ManifestationStatus): Duration
+        ..
+        # onBeforeAdvance(manifestation, next): void
+        # onBeforeAppeal(manifestation, appealStatus): void
+    }
+
+    class WorkflowStepResult <<record>> {
+        + nextStatus: ManifestationStatus
+        + deadline: Duration
+    }
+
+    class DefaultWorkflowTemplate {
+        # resolveNextStatus(current): ManifestationStatus
+        # resolveAppealStatus(current): ManifestationStatus
+        # isAppealAllowed(status): boolean
+        # deadlineFor(status): Duration
+    }
+
+    note bottom of DefaultWorkflowTemplate
+        Progressão linear: REGISTERED→IN_REVIEW→RESOLVED→CLOSED.
+        Sem recursos (isAppealAllowed = false).
+        Sem prazos (deadline = null).
+        Substituída pelo bean da instância via @ConditionalOnMissingBean.
+    end note
+}
+
+package "br.imd.ufrn.core.service" <<Core>> #E8F4FD {
+    class WorkflowServiceImpl {
+        - workflowTemplate: WorkflowTemplate
+        + advance(manifestationId: Long): ManifestationResponse
+        + appeal(manifestationId: Long): ManifestationResponse
+    }
+}
+
+package "backend/instancia-1" <<Instância>> #FEF9E7 {
+    class ComplianceWorkflowTemplate {
+        # resolveNextStatus(current): ManifestationStatus
+        # resolveAppealStatus(current): ManifestationStatus
+        # isAppealAllowed(status): boolean
+        # deadlineFor(status): Duration
+        # onBeforeAdvance(manifestation, next): void
+    }
+    note bottom of ComplianceWorkflowTemplate
+        5 fases: REGISTERED→IN_REVIEW→RESOLVED→CLOSED
+        Sem opção de recurso simples (investigação sigilosa).
+        Prazos definidos por regulamento interno.
+        Hook onBeforeAdvance registra auditoria.
+    end note
+}
+
+package "backend/instancia-3" <<Instância>> #F9EBEA {
+    class PublicServiceWorkflowTemplate {
+        # resolveNextStatus(current): ManifestationStatus
+        # resolveAppealStatus(current): ManifestationStatus
+        # isAppealAllowed(status): boolean
+        # deadlineFor(status): Duration
+    }
+    note bottom of PublicServiceWorkflowTemplate
+        Baseado na LAI.
+        Recurso em 3 instâncias administrativas.
+        Prazos definidos em lei (ex.: 20 dias úteis).
+    end note
+}
+
+DefaultWorkflowTemplate          --|>  WorkflowTemplate
+ComplianceWorkflowTemplate       --|>  WorkflowTemplate
+PublicServiceWorkflowTemplate    --|>  WorkflowTemplate
+
+WorkflowServiceImpl              -->  WorkflowTemplate   : delega
+WorkflowServiceImpl              ..>  WorkflowStepResult : consome
+
+@enduml

@@ -1,6 +1,8 @@
 package br.imd.ufrn.core.web;
 
 import br.imd.ufrn.core.exception.AuditEntryNotFoundException;
+import br.imd.ufrn.core.exception.WorkflowAdvanceNotAllowedException;
+import br.imd.ufrn.core.exception.WorkflowAppealNotAllowedException;
 import br.imd.ufrn.core.exception.DecisionRecordNotFoundException;
 import br.imd.ufrn.core.exception.DuplicateProtocolException;
 import br.imd.ufrn.core.exception.EvaluationAlreadyExistsException;
@@ -73,6 +75,22 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleResponsibleAssignmentNotFound(ResponsibleAssignmentNotFoundException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         detail.setTitle("Designação não encontrada");
+        return detail;
+    }
+
+    @ExceptionHandler(WorkflowAdvanceNotAllowedException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ProblemDetail handleWorkflowAdvanceNotAllowed(WorkflowAdvanceNotAllowedException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        detail.setTitle("Avanço de workflow não permitido");
+        return detail;
+    }
+
+    @ExceptionHandler(WorkflowAppealNotAllowedException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ProblemDetail handleWorkflowAppealNotAllowed(WorkflowAppealNotAllowedException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        detail.setTitle("Recurso não permitido");
         return detail;
     }
 
