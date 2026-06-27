@@ -14,5 +14,7 @@ public record ManifestationRequest(
 
         @NotBlank(message = "O tipo é obrigatório")
         @Size(max = 100, message = "O tipo deve ter no máximo 100 caracteres")
-        String type
+        String type,
+
+        boolean anonymous
 ) {}

@@ -1,0 +1,80 @@
+@startuml anonymization-strategy
+
+title Ponto variável — Regras de Anonimização (Strategy)
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "br.imd.ufrn.core.anonymization" <<Core>> #E8F4FD {
+
+    interface AnonymizationStrategy {
+        + anonymize(text: String, context: AnonymizationContext): String
+    }
+
+    class AnonymizationContext <<record>> {
+        + anonymous: boolean
+        + type: String
+    }
+
+    class TransparentAnonymizationStrategy {
+        + anonymize(text: String, context: AnonymizationContext): String
+    }
+
+    note bottom of TransparentAnonymizationStrategy
+        Registrada via @ConditionalOnMissingBean.
+        Retorna o texto sem modificação.
+        Substituída pelo bean da instância.
+    end note
+}
+
+package "br.imd.ufrn.core.config" <<Core>> #E8F4FD {
+    class CoreAutoConfiguration <<@AutoConfiguration>> {
+        + transparentAnonymizationStrategy(): AnonymizationStrategy
+    }
+    note right of CoreAutoConfiguration
+        @ConditionalOnMissingBean(AnonymizationStrategy.class)
+    end note
+}
+
+package "br.imd.ufrn.core.service" <<Core>> #E8F4FD {
+    class ManifestationServiceImpl <<Context>> {
+        - anonymizationStrategy: AnonymizationStrategy
+        + create(request: ManifestationRequest): ManifestationResponse
+        + update(id: Long, request: ManifestationRequest): ManifestationResponse
+    }
+}
+
+package "backend/instancia-1" <<Instância>> #FEF9E7 {
+    class ComplianceAnonymizationStrategy {
+        - aiClient: AiServiceClient
+        + anonymize(text: String, context: AnonymizationContext): String
+    }
+    note bottom of ComplianceAnonymizationStrategy
+        Se context.anonymous() → chama microserviço de IA.
+        Caso contrário → retorna texto original.
+        O tipo (context.type()) é enviado ao microserviço
+        para aplicar regras por categoria (assédio, fraude...).
+    end note
+}
+
+package "backend/instancia-2" <<Instância>> #F9EBEA {
+    class UniversityAnonymizationStrategy {
+        + anonymize(text: String, context: AnonymizationContext): String
+    }
+    note bottom of UniversityAnonymizationStrategy
+        Identidade visível apenas para a Ouvidoria Geral.
+        Lógica de mascaramento parcial definida pela instância.
+    end note
+}
+
+TransparentAnonymizationStrategy  ..|>  AnonymizationStrategy
+ComplianceAnonymizationStrategy   ..|>  AnonymizationStrategy
+UniversityAnonymizationStrategy   ..|>  AnonymizationStrategy
+
+ManifestationServiceImpl          -->   AnonymizationStrategy : usa
+ManifestationServiceImpl          ..>   AnonymizationContext  : cria
+CoreAutoConfiguration             ..>   TransparentAnonymizationStrategy : instancia (fallback)
+
+@enduml

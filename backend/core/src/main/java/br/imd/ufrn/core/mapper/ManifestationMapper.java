@@ -17,6 +17,6 @@ public interface ManifestationMapper {
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "description", ignore = true)
     Manifestation toEntity(ManifestationRequest request);
-    
 }
