@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: atendimentodb
+      POSTGRES_USER: atendimento
+      POSTGRES_PASSWORD: atendimento
+    ports:
+      - "5435:5432"
+    volumes:
+      - atendimento_pgdata:/var/lib/postgresql/data
+
+volumes:
+  atendimento_pgdata:
