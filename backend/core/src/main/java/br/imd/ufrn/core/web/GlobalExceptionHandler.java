@@ -1,6 +1,8 @@
 package br.imd.ufrn.core.web;
 
 import br.imd.ufrn.core.exception.AuditEntryNotFoundException;
+import br.imd.ufrn.core.exception.AutoAssignmentUnavailableException;
+import br.imd.ufrn.core.exception.ConflictOfInterestException;
 import br.imd.ufrn.core.exception.WorkflowAdvanceNotAllowedException;
 import br.imd.ufrn.core.exception.WorkflowAppealNotAllowedException;
 import br.imd.ufrn.core.exception.DecisionRecordNotFoundException;
@@ -75,6 +77,22 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleResponsibleAssignmentNotFound(ResponsibleAssignmentNotFoundException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         detail.setTitle("Designação não encontrada");
+        return detail;
+    }
+
+    @ExceptionHandler(ConflictOfInterestException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ProblemDetail handleConflictOfInterest(ConflictOfInterestException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        detail.setTitle("Conflito de interesse");
+        return detail;
+    }
+
+    @ExceptionHandler(AutoAssignmentUnavailableException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ProblemDetail handleAutoAssignmentUnavailable(AutoAssignmentUnavailableException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        detail.setTitle("Designação automática indisponível");
         return detail;
     }
 

@@ -1,0 +1,126 @@
+@startuml conflict-designation-strategy
+
+title Pontos variáveis — Conflito de Interesse e Designação (Strategy)
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+package "br.imd.ufrn.core.conflict" <<Core>> #E8F4FD {
+
+    interface ConflictOfInterestStrategy {
+        + hasConflict(context: ConflictOfInterestContext): boolean
+    }
+
+    class ConflictOfInterestContext <<record>> {
+        + manifestationId: Long
+        + analystId: Long
+        + manifestationType: String
+    }
+
+    class NoConflictOfInterestStrategy {
+        + hasConflict(context): boolean
+    }
+    note bottom of NoConflictOfInterestStrategy
+        Sempre retorna false.
+        Substituída via @ConditionalOnMissingBean.
+    end note
+}
+
+package "br.imd.ufrn.core.designation" <<Core>> #E8F4FD {
+
+    interface DesignationStrategy {
+        + resolve(context: DesignationContext): Long
+    }
+
+    class DesignationContext <<record>> {
+        + manifestationId: Long
+        + manifestationType: String
+    }
+
+    class ManualDesignationStrategy {
+        + resolve(context): Long
+    }
+    note bottom of ManualDesignationStrategy
+        Sempre retorna null.
+        Indica designação manual.
+        Substituída via @ConditionalOnMissingBean.
+    end note
+}
+
+package "br.imd.ufrn.core.service" <<Core>> #E8F4FD {
+
+    class DesignationServiceImpl {
+        - designationStrategy: DesignationStrategy
+        - conflictOfInterestStrategy: ConflictOfInterestStrategy
+        + autoAssign(manifestationId: Long): ResponsibleAssignmentResponse
+        + hasConflict(manifestationId: Long, analystId: Long): boolean
+    }
+}
+
+package "backend/instancia-1" <<Instância>> #FEF9E7 {
+    class HierarchyConflictStrategy {
+        + hasConflict(context): boolean
+    }
+    note bottom of HierarchyConflictStrategy
+        Impedido se analista for
+        superior hierárquico ou
+        colega de mesmo cargo.
+    end note
+
+    class RoleBasedDesignationStrategy {
+        + resolve(context): Long
+    }
+    note bottom of RoleBasedDesignationStrategy
+        Seleciona analista com
+        perfil de investigação
+        compatível com o tipo.
+    end note
+}
+
+package "backend/instancia-2" <<Instância>> #EAFAF1 {
+    class DepartmentConflictStrategy {
+        + hasConflict(context): boolean
+    }
+    note bottom of DepartmentConflictStrategy
+        Impedido se analista
+        pertencer ao mesmo
+        centro/departamento.
+    end note
+}
+
+package "backend/instancia-3" <<Instância>> #F9EBEA {
+    class LegalConflictStrategy {
+        + hasConflict(context): boolean
+    }
+    note bottom of LegalConflictStrategy
+        Impedimento por citação
+        ou parentesco (LAI).
+    end note
+
+    class RegionDesignationStrategy {
+        + resolve(context): Long
+    }
+    note bottom of RegionDesignationStrategy
+        Designação automática
+        por especialidade do
+        órgão ou região.
+    end note
+}
+
+NoConflictOfInterestStrategy    ..|>  ConflictOfInterestStrategy
+HierarchyConflictStrategy       ..|>  ConflictOfInterestStrategy
+DepartmentConflictStrategy      ..|>  ConflictOfInterestStrategy
+LegalConflictStrategy           ..|>  ConflictOfInterestStrategy
+
+ManualDesignationStrategy       ..|>  DesignationStrategy
+RoleBasedDesignationStrategy    ..|>  DesignationStrategy
+RegionDesignationStrategy       ..|>  DesignationStrategy
+
+DesignationServiceImpl          -->   DesignationStrategy          : resolve()
+DesignationServiceImpl          -->   ConflictOfInterestStrategy   : hasConflict()
+DesignationServiceImpl          ..>   DesignationContext           : cria
+DesignationServiceImpl          ..>   ConflictOfInterestContext    : cria
+
+@enduml
