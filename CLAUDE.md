@@ -119,6 +119,7 @@ O Core (`backend/core`, pacote `br.imd.ufrn.core`) já implementa **todos os pon
 - `ConflictOfInterestStrategy` → default `NoConflictOfInterestStrategy`
 - `DesignationStrategy` → default `ManualDesignationStrategy` (retorna `null` = designação manual)
 - `WorkflowTemplate` (abstrata, Template Method) → default `DefaultWorkflowTemplate`
+- `CategorizationStrategy` → default `NoOpCategorizationStrategy` (não classifica); resultado (`category`/`riskLevel`, ambos `String` nullable) gravado na `Manifestation` pelo `CategorizationService`. Gancho: `create()` publica `ManifestationCreatedEvent`; a instância escuta de forma assíncrona para disparar a IA.
 
 Defaults registrados em `config/CoreAutoConfiguration` (`@AutoConfiguration`), listada em
 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`.
@@ -138,6 +139,8 @@ backend/core/src/main/java/br/imd/ufrn/core/
 ├── anonymization/   ← AnonymizationStrategy + context + default  (ponto variável)
 ├── conflict/        ← ConflictOfInterestStrategy + context + default
 ├── designation/     ← DesignationStrategy + context + default
+├── categorization/  ← CategorizationStrategy + context + result + NoOp default
+├── event/           ← ManifestationCreatedEvent (gancho p/ a instância disparar a IA)
 └── workflow/        ← WorkflowTemplate (abstrata) + WorkflowStepResult + DefaultWorkflowTemplate
 ```
 
@@ -173,4 +176,4 @@ backend/core/src/main/java/br/imd/ufrn/core/
 - **Multi-módulo Maven** (não repositórios separados): instâncias são co-desenvolvidas pela mesma equipe sem ciclos de deploy independentes.
 - **Core é biblioteca** (`<packaging>jar</packaging>`), sem `spring-boot-maven-plugin` nem `main class`.
 - **Status de workflow fora do Core:** o Core define o enum `ManifestationStatus` com estados universais, mas não implementa transições — responsabilidade do workflow de cada instância.
-- **Pontos variáveis: contrato + default no Core, personalização na instância:** o Core define a interface/abstração de cada ponto variável (`AnonymizationStrategy`, `ConflictOfInterestStrategy`, `DesignationStrategy`, `WorkflowTemplate`) e registra uma implementação default segura via `CoreAutoConfiguration` (`@ConditionalOnMissingBean`). A instância sobrepõe declarando seu próprio bean — sem modificar o Core. Padrões usados: **Strategy** (anonimização, conflito, designação) e **Template Method** (workflow).
+- **Pontos variáveis: contrato + default no Core, personalização na instância:** o Core define a interface/abstração de cada ponto variável (`AnonymizationStrategy`, `ConflictOfInterestStrategy`, `DesignationStrategy`, `WorkflowTemplate`, `CategorizationStrategy`) e registra uma implementação default segura via `CoreAutoConfiguration` (`@ConditionalOnMissingBean`). A instância sobrepõe declarando seu próprio bean — sem modificar o Core. Padrões usados: **Strategy** (anonimização, conflito, designação) e **Template Method** (workflow).

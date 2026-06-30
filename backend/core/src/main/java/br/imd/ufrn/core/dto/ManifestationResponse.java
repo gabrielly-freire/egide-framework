@@ -10,6 +10,8 @@ public record ManifestationResponse(
         String description,
         String type,
         ManifestationStatus status,
+        String category,
+        String riskLevel,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

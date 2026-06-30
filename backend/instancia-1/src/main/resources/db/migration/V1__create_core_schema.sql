@@ -10,6 +10,8 @@ CREATE TABLE manifestations (
     description     TEXT         NOT NULL,
     type            VARCHAR(100) NOT NULL,
     status          VARCHAR(255) NOT NULL,
+    category        VARCHAR(100),
+    risk_level      VARCHAR(50),
     created_at      TIMESTAMP    NOT NULL,
     updated_at      TIMESTAMP    NOT NULL,
     active          BOOLEAN      NOT NULL

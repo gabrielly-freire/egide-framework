@@ -12,6 +12,7 @@ import br.imd.ufrn.core.domain.Manifestation;
 import br.imd.ufrn.core.domain.ManifestationStatus;
 import br.imd.ufrn.core.dto.ManifestationRequest;
 import br.imd.ufrn.core.dto.ManifestationResponse;
+import br.imd.ufrn.core.event.ManifestationCreatedEvent;
 import br.imd.ufrn.core.mapper.ManifestationMapper;
 import br.imd.ufrn.core.persistence.ManifestationRepository;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class ManifestationAnonymizationServiceTest {
@@ -33,6 +35,9 @@ class ManifestationAnonymizationServiceTest {
 
     @Mock
     private AnonymizationStrategy anonymizationStrategy;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private ManifestationServiceImpl service;
@@ -59,7 +64,7 @@ class ManifestationAnonymizationServiceTest {
 
         response = new ManifestationResponse(
                 1L, "2026-ABCDE12345", "Título", DESCRICAO_ANONIMIZADA,
-                "ASSÉDIO", ManifestationStatus.REGISTERED, null, null);
+                "ASSÉDIO", ManifestationStatus.REGISTERED, null, null, null, null);
     }
 
     @Test
@@ -103,6 +108,19 @@ class ManifestationAnonymizationServiceTest {
         service.create(requestAnonimo);
 
         verify(repository).save(argThat(e -> DESCRICAO_ANONIMIZADA.equals(e.getDescription())));
+    }
+
+    @Test
+    void create_devePublicarManifestationCreatedEvent() {
+        when(anonymizationStrategy.anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class)))
+                .thenReturn(DESCRICAO_ANONIMIZADA);
+        when(mapper.toEntity(requestAnonimo)).thenReturn(entity);
+        when(repository.save(any(Manifestation.class))).thenReturn(entity);
+        when(mapper.toResponse(entity)).thenReturn(response);
+
+        service.create(requestAnonimo);
+
+        verify(eventPublisher).publishEvent(any(ManifestationCreatedEvent.class));
     }
 
     @Test

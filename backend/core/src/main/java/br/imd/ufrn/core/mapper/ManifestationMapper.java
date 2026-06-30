@@ -21,6 +21,8 @@ public interface ManifestationMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "description", ignore = true)
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "riskLevel", ignore = true)
     Manifestation toEntity(ManifestationRequest request);
 
     /**
@@ -35,6 +37,8 @@ public interface ManifestationMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "description", ignore = true)
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "riskLevel", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(ManifestationRequest request, @MappingTarget Manifestation entity);
 }

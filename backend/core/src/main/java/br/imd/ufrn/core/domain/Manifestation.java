@@ -34,4 +34,10 @@ public class Manifestation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ManifestationStatus status;
+
+    @Column(length = 100)
+    private String category;
+
+    @Column(length = 50)
+    private String riskLevel;
 }
