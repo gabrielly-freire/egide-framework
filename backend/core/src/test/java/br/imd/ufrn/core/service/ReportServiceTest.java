@@ -85,7 +85,7 @@ class ReportServiceTest {
                 new Object[]{"REGISTERED", 2L},
                 new Object[]{"CLOSED", 2L}
         ));
-        when(manifestationRepository.countGroupedByTypeBetween(from, to)).thenReturn(List.of(
+        when(manifestationRepository.countGroupedByTypeBetween(from, to)).thenReturn(List.<Object[]>of(
                 new Object[]{"DENÚNCIA", 4L}
         ));
         when(evaluationRepository.countByCreatedAtBetween(from, to)).thenReturn(2L);

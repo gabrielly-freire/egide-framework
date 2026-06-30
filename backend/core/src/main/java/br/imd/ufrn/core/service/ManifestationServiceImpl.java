@@ -61,9 +61,9 @@ public class ManifestationServiceImpl implements ManifestationService {
 
     @Override
     public ManifestationResponse update(Long id, ManifestationRequest request) {
-        repository.findById(id)
+        Manifestation entity = repository.findById(id)
                 .orElseThrow(() -> new ManifestationNotFoundException(id));
-        Manifestation entity = mapper.toEntity(request);
+        mapper.updateEntity(request, entity);
         entity.setDescription(anonymizationStrategy.anonymize(
                 request.description(), new AnonymizationContext(request.anonymous(), request.type())));
         return mapper.toResponse(repository.save(entity));

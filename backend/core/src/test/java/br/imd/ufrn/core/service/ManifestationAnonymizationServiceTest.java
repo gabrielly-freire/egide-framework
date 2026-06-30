@@ -110,7 +110,6 @@ class ManifestationAnonymizationServiceTest {
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
         when(anonymizationStrategy.anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class)))
                 .thenReturn(DESCRICAO_ANONIMIZADA);
-        when(mapper.toEntity(requestAnonimo)).thenReturn(entity);
         when(repository.save(any(Manifestation.class))).thenReturn(entity);
         when(mapper.toResponse(entity)).thenReturn(response);
 
