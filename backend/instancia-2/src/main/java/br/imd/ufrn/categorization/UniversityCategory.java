@@ -9,8 +9,8 @@ import java.util.Set;
  * {@link UniversityCategorizationStrategy} procura no texto da manifestação. {@link #OUTROS} é o
  * fallback, sem palavras-chave: vale quando nenhuma outra categoria é reconhecida.
  *
- * <p>Palavras-chave de uma só palavra casam por token exato (evita falso-positivo por substring);
- * expressões com espaço casam por ocorrência no texto.
+ * <p>Palavras-chave de uma só palavra casam por token inteiro, tolerando plural (evita
+ * falso-positivo por substring); expressões com espaço casam por ocorrência no texto.
  */
 public enum UniversityCategory {
 

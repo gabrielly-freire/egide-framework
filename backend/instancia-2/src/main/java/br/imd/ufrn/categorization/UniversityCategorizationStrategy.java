@@ -52,12 +52,21 @@ public class UniversityCategorizationStrategy implements CategorizationStrategy 
         for (String keyword : category.keywords()) {
             boolean matched = keyword.contains(" ")
                     ? normalizedText.contains(keyword)   // expressão composta
-                    : tokens.contains(keyword);          // palavra isolada (token exato)
+                    : matchesWord(tokens, keyword);      // palavra isolada (tolera plural)
             if (matched) {
                 score++;
             }
         }
         return score;
+    }
+
+    // Casa a palavra-chave (singular) com o token, tolerando as formas de plural mais comuns do
+    // português: "+s" (disciplina/disciplinas) e "+es" (professor/professores). Como só testa a
+    // igualdade de tokens inteiros, não há falso-positivo por substring.
+    private static boolean matchesWord(Set<String> tokens, String keyword) {
+        return tokens.contains(keyword)
+                || tokens.contains(keyword + "s")
+                || tokens.contains(keyword + "es");
     }
 
     private static String safe(String value) {

@@ -80,6 +80,24 @@ class UniversityCategorizationStrategyTest {
     }
 
     @Test
+    void categorize_deveReconhecerPlural_comS() {
+        // "disciplinas" (plural) deve casar com a palavra-chave "disciplina".
+        CategorizationResult result =
+                categorize("Reajuste", "Não consigo o reajuste das minhas disciplinas de programação.");
+
+        assertThat(result.category()).isEqualTo("ACADEMICO");
+    }
+
+    @Test
+    void categorize_deveReconhecerPlural_comEs() {
+        // "professores" (plural em -es) deve casar com "professor".
+        CategorizationResult result =
+                categorize("Reclamação", "Os professores não lançaram as notas.");
+
+        assertThat(result.category()).isEqualTo("ACADEMICO");
+    }
+
+    @Test
     void categorize_deveRetornarRiskLevelNulo() {
         CategorizationResult result =
                 categorize("Elevador quebrado", "O elevador está parado.");
