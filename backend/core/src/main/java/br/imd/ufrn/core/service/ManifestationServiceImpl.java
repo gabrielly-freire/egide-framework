@@ -6,12 +6,14 @@ import br.imd.ufrn.core.domain.Manifestation;
 import br.imd.ufrn.core.domain.ManifestationStatus;
 import br.imd.ufrn.core.dto.ManifestationRequest;
 import br.imd.ufrn.core.dto.ManifestationResponse;
+import br.imd.ufrn.core.event.ManifestationCreatedEvent;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
 import br.imd.ufrn.core.mapper.ManifestationMapper;
 import br.imd.ufrn.core.persistence.ManifestationRepository;
 import java.time.Year;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class ManifestationServiceImpl implements ManifestationService {
     private final ManifestationRepository repository;
     private final ManifestationMapper mapper;
     private final AnonymizationStrategy anonymizationStrategy;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public ManifestationResponse create(ManifestationRequest request) {
@@ -34,7 +37,9 @@ public class ManifestationServiceImpl implements ManifestationService {
         entity.setActive(true);
         entity.setDescription(anonymizationStrategy.anonymize(
                 request.description(), new AnonymizationContext(request.anonymous(), request.type())));
-        return mapper.toResponse(repository.save(entity));
+        Manifestation saved = repository.save(entity);
+        eventPublisher.publishEvent(new ManifestationCreatedEvent(saved.getId()));
+        return mapper.toResponse(saved);
     }
 
     @Override
@@ -61,9 +66,9 @@ public class ManifestationServiceImpl implements ManifestationService {
 
     @Override
     public ManifestationResponse update(Long id, ManifestationRequest request) {
-        repository.findById(id)
+        Manifestation entity = repository.findById(id)
                 .orElseThrow(() -> new ManifestationNotFoundException(id));
-        Manifestation entity = mapper.toEntity(request);
+        mapper.updateEntity(request, entity);
         entity.setDescription(anonymizationStrategy.anonymize(
                 request.description(), new AnonymizationContext(request.anonymous(), request.type())));
         return mapper.toResponse(repository.save(entity));

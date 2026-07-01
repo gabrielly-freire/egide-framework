@@ -33,7 +33,7 @@ Configuráveis por instância, adaptando o framework ao contexto de cada organiz
 
 Usado por empresas privadas para receber denúncias internas.
 
-[Frontend](frontend) | [Backend](backend/instancia-1/backend)
+[Frontend](frontend) | [Backend](backend/instancia-1-original/backend)
 
 | Ponto Variável         | Configuração                                                                                        |
 |------------------------|-----------------------------------------------------------------------------------------------------|

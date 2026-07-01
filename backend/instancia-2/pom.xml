@@ -11,10 +11,10 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>egide-instancia-1</artifactId>
+    <artifactId>egide-instancia-2</artifactId>
     <packaging>jar</packaging>
-    <name>egide-instancia-1</name>
-    <description>Instância 1, compliance corporativo</description>
+    <name>egide-instancia-2</name>
+    <description>Instância 2, ouvidoria universitária</description>
 
     <dependencies>
         <dependency>
