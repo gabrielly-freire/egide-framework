@@ -1,0 +1,96 @@
+<div class="list-page">
+  <div class="page-header">
+    <div>
+      <h2><i class="bi bi-file-text me-2"></i>Manifestações</h2>
+      <small class="text-muted">{{ totalElements() }} registro(s) no total</small>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+  } @else {
+    <div class="table-card">
+      @if (items().length === 0) {
+        <div class="empty-state">
+          <i class="bi bi-inbox"></i>
+          <p>Nenhuma manifestação encontrada.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Protocolo</th>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of items(); track m.id) {
+                <tr>
+                  <td><code class="protocol-code">{{ m.protocolNumber }}</code></td>
+                  <td class="title-cell">{{ m.title }}</td>
+                  <td>
+                    <span class="type-tag">{{ TYPE_LABELS[m.type] ?? m.type }}</span>
+                  </td>
+                  <td>
+                    <span class="badge text-white {{ statusClass(m.status) }}">
+                      {{ STATUS_LABELS[m.status] }}
+                    </span>
+                  </td>
+                  <td class="text-muted small">{{ m.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>
+                    <a [routerLink]="['/manifestacoes', m.id]" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <div class="pagination-wrapper">
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="currentPage() === 0"
+              (click)="goToPage(currentPage() - 1)"
+            >
+              <i class="bi bi-chevron-left"></i>
+            </button>
+
+            @for (p of pages(); track p) {
+              <button
+                class="btn btn-sm"
+                [class.btn-gov]="p === currentPage()"
+                [class.btn-outline-secondary]="p !== currentPage()"
+                (click)="goToPage(p)"
+              >
+                {{ p + 1 }}
+              </button>
+            }
+
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="currentPage() === totalPages() - 1"
+              (click)="goToPage(currentPage() + 1)"
+            >
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

@@ -2,6 +2,8 @@ package br.imd.ufrn.core.config;
 
 import br.imd.ufrn.core.anonymization.AnonymizationStrategy;
 import br.imd.ufrn.core.anonymization.TransparentAnonymizationStrategy;
+import br.imd.ufrn.core.categorization.CategorizationStrategy;
+import br.imd.ufrn.core.categorization.NoOpCategorizationStrategy;
 import br.imd.ufrn.core.conflict.ConflictOfInterestStrategy;
 import br.imd.ufrn.core.conflict.NoConflictOfInterestStrategy;
 import br.imd.ufrn.core.designation.DesignationStrategy;
@@ -37,5 +39,11 @@ public class CoreAutoConfiguration {
     @ConditionalOnMissingBean(DesignationStrategy.class)
     public DesignationStrategy manualDesignationStrategy() {
         return new ManualDesignationStrategy();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CategorizationStrategy.class)
+    public CategorizationStrategy noOpCategorizationStrategy() {
+        return new NoOpCategorizationStrategy();
     }
 }

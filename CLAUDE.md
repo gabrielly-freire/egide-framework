@@ -13,16 +13,16 @@ Framework modular para construção de sistemas de ouvidoria. A ideia central é
 ```
 projeto/
 ├── pom.xml                     ← pai agregador (versões centralizadas)
-├── core/                       ← biblioteca reutilizável, sem main class
 ├── backend/
-│   ├── instancia-1/            ← Sistema de Compliance Corporativo
-│   ├── instancia-2/            ← Ouvidoria Universitária
-│   └── instancia-3/            ← Atendimento Público
+│   ├── core/                   ← biblioteca reutilizável, sem main class (pacote br.imd.ufrn.core)
+│   ├── instancia-1/            ← Sistema de Compliance Corporativo (pacote br.imd.ufrn)
+│   ├── instancia-2/            ← Ouvidoria Universitária (pacote br.imd.ufrn)
+│   └── instancia-1-original/   ← monolito legado de referência (pré-framework)
 └── frontend/
-    ├── instancia-1/
-    ├── instancia-2/
-    └── instancia-3/
+    └── instancia1/
 ```
+
+> A instância 3 está especificada neste documento, mas ainda não foi criada como módulo Maven. O `pom.xml` raiz agrega hoje `backend/core`, `backend/instancia-1` e `backend/instancia-2`.
 
 O projeto é um **Maven multi-módulo**. O `pom.xml` raiz é o pai agregador: centraliza versões do Java, Spring Boot, MapStruct e outras dependências comuns. As instâncias declaram o Core como dependência sem precisar repetir versões.
 
@@ -45,7 +45,7 @@ Presentes em **todas** as instâncias, sem variação. O Core os implementa comp
 
 ## Pontos variáveis (Instâncias)
 
-Configuráveis por instância. O Core **não implementa** nenhum desses comportamentos — define apenas as interfaces ou abstrações que cada instância concretiza.
+Configuráveis por instância. O Core define o **contrato** de cada ponto (interface ou classe abstrata) e fornece uma **implementação default segura**, registrada por auto-configuração com `@ConditionalOnMissingBean`. Quando a instância declara seu próprio bean, o default é automaticamente desligado e substituído — a instância personaliza sem tocar no Core.
 
 | Ponto variável | O que varia |
 |---|---|
@@ -61,7 +61,7 @@ Configuráveis por instância. O Core **não implementa** nenhum desses comporta
 
 ### Instância 1 — Sistema de Compliance Corporativo
 
-Empresas privadas · denúncias internas · `backend/instancia-1/` · `br.imd.ufrn.egide`
+Empresas privadas · denúncias internas · `backend/instancia-1/` · pacote `br.imd.ufrn` (main class `EgideApplication`)
 
 | Ponto variável | Configuração |
 |---|---|
@@ -70,21 +70,30 @@ Empresas privadas · denúncias internas · `backend/instancia-1/` · `br.imd.uf
 | Conflito de interesse | Baseado em hierarquia e cargos |
 | Workflow | Investigação sigilosa, sem opção de recurso simples |
 
-Implementação atual: autenticação JWT, workflow de 5 fases, categorização por IA (microserviço externo), exportação PDF (OpenPDF).
+Alvo dos pontos variáveis (do monolito legado `instancia-1-original`, a serem reimplementados sobre o Core): autenticação JWT, workflow de 5 fases, categorização por IA (microserviço externo), exportação PDF (OpenPDF).
+
+Estado atual de `backend/instancia-1`: esqueleto (main class + `application.yml` + `pom.xml`). Ainda não sobrepõe nenhum ponto variável, então roda com os defaults do Core. Migração de schema via Flyway (`db/migration/V1`); Hibernate em `ddl-auto: validate`.
 PostgreSQL local: porta 5434, banco `egidedb`.
 
 ---
 
 ### Instância 2 — Ouvidoria Universitária
 
-Universidades · alunos, professores e servidores · `backend/instancia-2/`
+Universidades · alunos, professores e servidores · `backend/instancia-2/` · pacote `br.imd.ufrn` (main class `OuvidoriaUniversitariaApplication`)
 
-| Ponto variável | Configuração |
-|---|---|
-| Anonimização | Parcial — identidade visível apenas para a Ouvidoria Geral |
-| Categorização | Infraestrutura, matrícula, atendimento etc. |
-| Conflito de interesse | Analista não pode pertencer ao mesmo centro/departamento do denunciado |
-| Workflow | Mediação interna; prazo de recurso atrelado ao calendário acadêmico |
+| Ponto variável | Configuração | Bean da instância (desliga o default do Core) |
+|---|---|---|
+| Anonimização | Parcial — mascara identificadores diretos (CPF, matrícula, e-mail, telefone); nome do manifestante permanece visível | `PartialAnonymizationStrategy` |
+| Categorização | Heurística de palavras-chave em categorias institucionais: `INFRAESTRUTURA`, `MATRICULA`, `ATENDIMENTO`, `ACADEMICO`, `FINANCEIRO`, `OUTROS`; `riskLevel` sempre `null`. Disparada por listener síncrono do `ManifestationCreatedEvent` | `UniversityCategorizationStrategy` |
+| Conflito de interesse | Impedimento quando analista e denunciado são da mesma unidade acadêmica | `SameUnitConflictOfInterestStrategy` |
+| Designação | Mantém o default manual do Core (não é ponto customizado nesta instância) | — |
+| Workflow | Mediação interna (`IN_REVIEW`); recurso permitido em `RESOLVED` reabre a mediação; prazos de mediação (15d) e recurso (30d) | `UniversityWorkflowTemplate` |
+
+Dados próprios da instância (não existem no Core), para o conflito de interesse:
+- `AcademicMember` (nome + unidade acadêmica) e `ManifestationAccusation` (vincula manifestação → denunciado), com migração Flyway `db/migration/V2`.
+- Endpoints de apoio: `POST/GET /v1/academic-members` e `POST/GET /v1/manifestations/{id}/accusation`.
+
+PostgreSQL local: porta 5434, banco `egide_universitaria`; app na porta 8081.
 
 ---
 
@@ -103,44 +112,47 @@ Universidades · alunos, professores e servidores · `backend/instancia-2/`
 
 ## Core — Módulos implementados
 
-### Registro de Manifestações
+O Core (`backend/core`, pacote `br.imd.ufrn.core`) já implementa **todos os pontos fixos** e expõe os **contratos + defaults dos pontos variáveis**. Cada ponto fixo segue o mesmo formato: entidade + DTOs + mapper + repository + service (interface/impl) + controller.
 
-**O Core faz:**
-- Cadastrar, consultar, atualizar e listar manifestações
-- Gerar número de protocolo único (formato `YYYY-{10 chars UUID}`)
-- Manter estado inicial (`REGISTERED`)
-- Exclusão lógica (`active = false`)
-- Controlar `createdAt` / `updatedAt` via `@PrePersist` / `@PreUpdate`
+**Pontos fixos implementados:**
+- **Registro de manifestações** — protocolo único (`YYYY-{10 chars UUID}`), estado inicial `REGISTERED`, soft delete, timestamps via `@PrePersist`/`@PreUpdate`.
+- **Avaliação de atendimento** — `ServiceEvaluation` (uma por manifestação).
+- **Designação de responsável** — `ResponsibleAssignment` (atribuição manual via `POST /v1/assignments`).
+- **Registro de decisões e pareceres** — `DecisionRecord` (`DECISION` / `OPINION`).
+- **Histórico / auditoria** — `AuditEntry` (imutável, sem soft delete).
+- **Geração de relatórios** — `ReportService` (`ManifestationSummaryReport`).
 
-**O Core não faz:**
-- Transições de status além de `REGISTERED` (workflow é ponto variável)
-- Anonimização, categorização por IA, designação de responsável (pontos variáveis)
+**Pontos variáveis (contrato + default no Core):**
+- `AnonymizationStrategy` → default `TransparentAnonymizationStrategy` (não anonimiza)
+- `ConflictOfInterestStrategy` → default `NoConflictOfInterestStrategy`
+- `DesignationStrategy` → default `ManualDesignationStrategy` (retorna `null` = designação manual)
+- `WorkflowTemplate` (abstrata, Template Method) → default `DefaultWorkflowTemplate`
+- `CategorizationStrategy` → default `NoOpCategorizationStrategy` (não classifica); resultado (`category`/`riskLevel`, ambos `String` nullable) gravado na `Manifestation` pelo `CategorizationService`. Gancho: `create()` publica `ManifestationCreatedEvent`; a instância escuta de forma assíncrona para disparar a IA.
 
-**Estrutura de pacotes:**
+Defaults registrados em `config/CoreAutoConfiguration` (`@AutoConfiguration`), listada em
+`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`.
+
+**Estrutura de pacotes (layout flat por camada):**
 ```
-core/src/main/java/br/imd/ufrn/egide/core/
-├── shared/
-│   ├── domain/BaseEntity.java           ← id, createdAt, updatedAt, active
-│   └── exception/CoreException.java     ← base abstrata para exceções do Core
-└── manifestation/
-    ├── domain/
-    │   ├── Manifestation.java
-    │   └── ManifestationStatus.java     ← REGISTERED, IN_REVIEW, RESOLVED, CLOSED
-    ├── application/
-    │   ├── dto/                         ← CreateManifestationRequest, UpdateManifestationRequest, ManifestationResponse
-    │   ├── mapper/ManifestationMapper.java
-    │   └── service/
-    │       ├── ManifestationService.java        ← interface
-    │       └── ManifestationServiceImpl.java
-    ├── exception/
-    │   ├── ManifestationNotFoundException.java
-    │   └── DuplicateProtocolException.java
-    └── infrastructure/
-        ├── persistence/ManifestationRepository.java
-        └── web/
-            ├── ManifestationController.java     ← /v1/manifestations
-            └── GlobalExceptionHandler.java
+backend/core/src/main/java/br/imd/ufrn/core/
+├── config/          ← CoreAutoConfiguration
+├── domain/          ← BaseEntity, Manifestation(+Status), AuditEntry, DecisionRecord(+Type),
+│                       ResponsibleAssignment, ServiceEvaluation
+├── dto/             ← *Request / *Response (records) + ManifestationSummaryReport
+├── mapper/          ← mappers MapStruct
+├── persistence/     ← repositories Spring Data
+├── service/         ← <X>Service + <X>ServiceImpl (inclui WorkflowService, ReportService)
+├── web/             ← controllers + GlobalExceptionHandler
+├── exception/       ← CoreException + exceções específicas
+├── anonymization/   ← AnonymizationStrategy + context + default  (ponto variável)
+├── conflict/        ← ConflictOfInterestStrategy + context + default
+├── designation/     ← DesignationStrategy + context + default
+├── categorization/  ← CategorizationStrategy + context + result + NoOp default
+├── event/           ← ManifestationCreatedEvent (gancho p/ a instância disparar a IA)
+└── workflow/        ← WorkflowTemplate (abstrata) + WorkflowStepResult + DefaultWorkflowTemplate
 ```
+
+> Como `EgideApplication` fica em `br.imd.ufrn`, o component scan da instância cobre `br.imd.ufrn.core.*` automaticamente: controllers, services, repositories e entidades do Core são carregados sem configuração extra; só os beans de estratégia vêm da auto-configuração.
 
 **Endpoints:**
 | Método | Path | Status |
@@ -172,4 +184,4 @@ core/src/main/java/br/imd/ufrn/egide/core/
 - **Multi-módulo Maven** (não repositórios separados): instâncias são co-desenvolvidas pela mesma equipe sem ciclos de deploy independentes.
 - **Core é biblioteca** (`<packaging>jar</packaging>`), sem `spring-boot-maven-plugin` nem `main class`.
 - **Status de workflow fora do Core:** o Core define o enum `ManifestationStatus` com estados universais, mas não implementa transições — responsabilidade do workflow de cada instância.
-- **Pontos variáveis não têm implementação no Core:** o Core pode definir interfaces ou abstrações, mas nunca implementações concretas de comportamentos variáveis.
+- **Pontos variáveis: contrato + default no Core, personalização na instância:** o Core define a interface/abstração de cada ponto variável (`AnonymizationStrategy`, `ConflictOfInterestStrategy`, `DesignationStrategy`, `WorkflowTemplate`, `CategorizationStrategy`) e registra uma implementação default segura via `CoreAutoConfiguration` (`@ConditionalOnMissingBean`). A instância sobrepõe declarando seu próprio bean — sem modificar o Core. Padrões usados: **Strategy** (anonimização, conflito, designação) e **Template Method** (workflow).

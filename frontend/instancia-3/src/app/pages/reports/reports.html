@@ -1,0 +1,97 @@
+<div class="reports-page">
+  <div class="page-header">
+    <h2><i class="bi bi-bar-chart me-2"></i>Relatórios</h2>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-card">
+    <form [formGroup]="form" (ngSubmit)="load()" class="row g-3 align-items-end" novalidate>
+      <div class="col-md-4">
+        <label class="form-label">Data inicial <span class="text-danger">*</span></label>
+        <input
+          type="date"
+          class="form-control"
+          [class.is-invalid]="form.controls.from.invalid && form.controls.from.touched"
+          formControlName="from"
+        />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Data final <span class="text-danger">*</span></label>
+        <input
+          type="date"
+          class="form-control"
+          [class.is-invalid]="form.controls.to.invalid && form.controls.to.touched"
+          formControlName="to"
+        />
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-gov w-100" [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>Gerando…
+          } @else {
+            <i class="bi bi-search me-2"></i>Gerar Relatório
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger mt-3">{{ error() }}</div>
+  }
+
+  @if (report()) {
+    <div class="report-results">
+      <!-- Total -->
+      <div class="total-card">
+        <div class="total-number">{{ report()!.totalManifestations }}</div>
+        <div class="total-label">Total de Manifestações</div>
+        <div class="total-period">
+          {{ report()!.from | date: 'dd/MM/yyyy' }} → {{ report()!.to | date: 'dd/MM/yyyy' }}
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <!-- By Status -->
+        <div class="chart-card">
+          <h4><i class="bi bi-diagram-3 me-2"></i>Por Status</h4>
+          @for (item of entries(report()!.byStatus); track item.key) {
+            <div class="bar-item">
+              <div class="bar-label">
+                <span class="badge text-white {{ statusClass(item.key) }}">
+                  {{ statusLabel(item.key) }}
+                </span>
+                <span class="bar-value">{{ item.value }}</span>
+              </div>
+              <div class="bar-track">
+                <div
+                  class="bar-fill {{ statusClass(item.key) }}"
+                  [style.width.%]="report()!.totalManifestations > 0 ? (item.value / report()!.totalManifestations) * 100 : 0"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- By Type -->
+        <div class="chart-card">
+          <h4><i class="bi bi-tags me-2"></i>Por Tipo</h4>
+          @for (item of entries(report()!.byType); track item.key) {
+            <div class="bar-item">
+              <div class="bar-label">
+                <span class="type-tag">{{ typeLabel(item.key) }}</span>
+                <span class="bar-value">{{ item.value }}</span>
+              </div>
+              <div class="bar-track">
+                <div
+                  class="bar-fill primary"
+                  [style.width.%]="report()!.totalManifestations > 0 ? (item.value / report()!.totalManifestations) * 100 : 0"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
