@@ -26,6 +26,7 @@
     <modules>
         <module>backend/core</module>
         <module>backend/instancia-1</module>
+        <module>backend/instancia-2</module>
     </modules>
 
 </project>

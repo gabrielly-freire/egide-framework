@@ -47,7 +47,7 @@ Usado por empresas privadas para receber denúncias internas.
 
 Usado por universidades para receber manifestações de alunos, professores e servidores.
 
-[Frontend](backend/instancia-2/frontend) | [Backend](backend/instancia-2/backend)
+[Frontend](frontend/instancia2) | [Backend](backend/instancia-2)
 
 | Ponto Variável         | Configuração                                                                                   |
 |------------------------|------------------------------------------------------------------------------------------------|
