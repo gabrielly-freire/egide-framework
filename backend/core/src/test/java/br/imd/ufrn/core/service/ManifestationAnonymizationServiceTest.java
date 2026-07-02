@@ -2,11 +2,11 @@ package br.imd.ufrn.core.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.imd.ufrn.core.anonymization.AnonymizationContext;
+import br.imd.ufrn.core.anonymization.AnonymizationResult;
 import br.imd.ufrn.core.anonymization.AnonymizationStrategy;
 import br.imd.ufrn.core.domain.Manifestation;
 import br.imd.ufrn.core.domain.ManifestationStatus;
@@ -44,6 +44,7 @@ class ManifestationAnonymizationServiceTest {
 
     private static final String DESCRICAO_ORIGINAL =
             "Fui assediado pelo analista João Silva no departamento de TI.";
+    private static final String TITULO_ANONIMIZADO = "Denúncia [MASCARADA]";
     private static final String DESCRICAO_ANONIMIZADA =
             "Fui assediado pelo analista [PESSOA] no departamento de TI.";
 
@@ -68,55 +69,53 @@ class ManifestationAnonymizationServiceTest {
     }
 
     @Test
-    void create_devePassarContextoComAnonimoTrueParaEstrategia() {
-        when(anonymizationStrategy.anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class)))
-                .thenReturn(DESCRICAO_ANONIMIZADA);
+    void create_devePassarContextoComTextosParaEstrategia() {
+        when(anonymizationStrategy.anonymize(any(AnonymizationContext.class)))
+                .thenReturn(new AnonymizationResult("Título", DESCRICAO_ANONIMIZADA));
         when(mapper.toEntity(requestAnonimo)).thenReturn(entity);
         when(repository.save(any(Manifestation.class))).thenReturn(entity);
-        when(mapper.toResponse(entity)).thenReturn(response);
 
         service.create(requestAnonimo);
 
-        verify(anonymizationStrategy).anonymize(
-                eq(DESCRICAO_ORIGINAL),
-                argThat(ctx -> ctx.anonymous() && "ASSÉDIO".equals(ctx.type())));
+        verify(anonymizationStrategy).anonymize(argThat(ctx ->
+                ctx.anonymous()
+                        && "ASSÉDIO".equals(ctx.type())
+                        && "Título".equals(ctx.title())
+                        && DESCRICAO_ORIGINAL.equals(ctx.description())));
     }
 
     @Test
-    void create_devePassarContextoComAnonimoFalseParaEstrategia() {
-        when(anonymizationStrategy.anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class)))
-                .thenReturn(DESCRICAO_ORIGINAL);
+    void create_devePassarAnonimoFalse_quandoIdentificada() {
+        when(anonymizationStrategy.anonymize(any(AnonymizationContext.class)))
+                .thenReturn(new AnonymizationResult("Título", DESCRICAO_ORIGINAL));
         when(mapper.toEntity(requestIdentificado)).thenReturn(entity);
         when(repository.save(any(Manifestation.class))).thenReturn(entity);
-        when(mapper.toResponse(entity)).thenReturn(response);
 
         service.create(requestIdentificado);
 
-        verify(anonymizationStrategy).anonymize(
-                eq(DESCRICAO_ORIGINAL),
-                argThat(ctx -> !ctx.anonymous() && "ASSÉDIO".equals(ctx.type())));
+        verify(anonymizationStrategy).anonymize(argThat(ctx -> !ctx.anonymous()));
     }
 
     @Test
-    void create_devePersistirDescricaoRetornadaPelaEstrategia() {
-        when(anonymizationStrategy.anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class)))
-                .thenReturn(DESCRICAO_ANONIMIZADA);
+    void create_devePersistirTituloEDescricaoAnonimizados() {
+        when(anonymizationStrategy.anonymize(any(AnonymizationContext.class)))
+                .thenReturn(new AnonymizationResult(TITULO_ANONIMIZADO, DESCRICAO_ANONIMIZADA));
         when(mapper.toEntity(requestAnonimo)).thenReturn(entity);
         when(repository.save(any(Manifestation.class))).thenReturn(entity);
-        when(mapper.toResponse(entity)).thenReturn(response);
 
         service.create(requestAnonimo);
 
-        verify(repository).save(argThat(e -> DESCRICAO_ANONIMIZADA.equals(e.getDescription())));
+        verify(repository).save(argThat(e ->
+                TITULO_ANONIMIZADO.equals(e.getTitle())
+                        && DESCRICAO_ANONIMIZADA.equals(e.getDescription())));
     }
 
     @Test
     void create_devePublicarManifestationCreatedEvent() {
-        when(anonymizationStrategy.anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class)))
-                .thenReturn(DESCRICAO_ANONIMIZADA);
+        when(anonymizationStrategy.anonymize(any(AnonymizationContext.class)))
+                .thenReturn(new AnonymizationResult("Título", DESCRICAO_ANONIMIZADA));
         when(mapper.toEntity(requestAnonimo)).thenReturn(entity);
         when(repository.save(any(Manifestation.class))).thenReturn(entity);
-        when(mapper.toResponse(entity)).thenReturn(response);
 
         service.create(requestAnonimo);
 
@@ -124,15 +123,17 @@ class ManifestationAnonymizationServiceTest {
     }
 
     @Test
-    void update_deveAnonimizarDescricaoAtualizada() {
+    void update_deveAnonimizarTextosAtualizados() {
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        when(anonymizationStrategy.anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class)))
-                .thenReturn(DESCRICAO_ANONIMIZADA);
+        when(anonymizationStrategy.anonymize(any(AnonymizationContext.class)))
+                .thenReturn(new AnonymizationResult(TITULO_ANONIMIZADO, DESCRICAO_ANONIMIZADA));
         when(repository.save(any(Manifestation.class))).thenReturn(entity);
         when(mapper.toResponse(entity)).thenReturn(response);
 
         service.update(1L, requestAnonimo);
 
-        verify(anonymizationStrategy).anonymize(eq(DESCRICAO_ORIGINAL), any(AnonymizationContext.class));
+        verify(repository).save(argThat(e ->
+                TITULO_ANONIMIZADO.equals(e.getTitle())
+                        && DESCRICAO_ANONIMIZADA.equals(e.getDescription())));
     }
 }

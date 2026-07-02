@@ -1,6 +1,7 @@
 package br.imd.ufrn.core.service;
 
 import br.imd.ufrn.core.anonymization.AnonymizationContext;
+import br.imd.ufrn.core.anonymization.AnonymizationResult;
 import br.imd.ufrn.core.anonymization.AnonymizationStrategy;
 import br.imd.ufrn.core.domain.Manifestation;
 import br.imd.ufrn.core.domain.ManifestationStatus;
@@ -35,8 +36,10 @@ public class ManifestationServiceImpl implements ManifestationService {
         entity.setProtocolNumber(generateProtocolNumber());
         entity.setStatus(ManifestationStatus.REGISTERED);
         entity.setActive(true);
-        entity.setDescription(anonymizationStrategy.anonymize(
-                request.description(), new AnonymizationContext(request.anonymous(), request.type())));
+        AnonymizationResult anonymized = anonymizationStrategy.anonymize(new AnonymizationContext(
+                request.anonymous(), request.type(), request.title(), request.description()));
+        entity.setTitle(anonymized.title());
+        entity.setDescription(anonymized.description());
         Manifestation saved = repository.save(entity);
         eventPublisher.publishEvent(new ManifestationCreatedEvent(saved.getId()));
         return mapper.toResponse(saved);
@@ -69,8 +72,10 @@ public class ManifestationServiceImpl implements ManifestationService {
         Manifestation entity = repository.findById(id)
                 .orElseThrow(() -> new ManifestationNotFoundException(id));
         mapper.updateEntity(request, entity);
-        entity.setDescription(anonymizationStrategy.anonymize(
-                request.description(), new AnonymizationContext(request.anonymous(), request.type())));
+        AnonymizationResult anonymized = anonymizationStrategy.anonymize(new AnonymizationContext(
+                request.anonymous(), request.type(), request.title(), request.description()));
+        entity.setTitle(anonymized.title());
+        entity.setDescription(anonymized.description());
         return mapper.toResponse(repository.save(entity));
     }
 
