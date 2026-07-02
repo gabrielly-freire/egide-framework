@@ -16,12 +16,13 @@ projeto/
 ├── backend/
 │   ├── core/                   ← biblioteca reutilizável, sem main class (pacote br.imd.ufrn.core)
 │   ├── instancia-1/            ← Sistema de Compliance Corporativo (pacote br.imd.ufrn)
+│   ├── instancia-2/            ← Ouvidoria Universitária (pacote br.imd.ufrn)
 │   └── instancia-1-original/   ← monolito legado de referência (pré-framework)
 └── frontend/
     └── instancia1/
 ```
 
-> As instâncias 2 e 3 estão especificadas neste documento, mas ainda não foram criadas como módulos Maven. O `pom.xml` raiz agrega hoje apenas `backend/core` e `backend/instancia-1`.
+> A instância 3 está especificada neste documento, mas ainda não foi criada como módulo Maven. O `pom.xml` raiz agrega hoje `backend/core`, `backend/instancia-1` e `backend/instancia-2`.
 
 O projeto é um **Maven multi-módulo**. O `pom.xml` raiz é o pai agregador: centraliza versões do Java, Spring Boot, MapStruct e outras dependências comuns. As instâncias declaram o Core como dependência sem precisar repetir versões.
 
@@ -78,14 +79,21 @@ PostgreSQL local: porta 5434, banco `egidedb`.
 
 ### Instância 2 — Ouvidoria Universitária
 
-Universidades · alunos, professores e servidores · `backend/instancia-2/`
+Universidades · alunos, professores e servidores · `backend/instancia-2/` · pacote `br.imd.ufrn` (main class `OuvidoriaUniversitariaApplication`)
 
-| Ponto variável | Configuração |
-|---|---|
-| Anonimização | Parcial — identidade visível apenas para a Ouvidoria Geral |
-| Categorização | Infraestrutura, matrícula, atendimento etc. |
-| Conflito de interesse | Analista não pode pertencer ao mesmo centro/departamento do denunciado |
-| Workflow | Mediação interna; prazo de recurso atrelado ao calendário acadêmico |
+| Ponto variável | Configuração | Bean da instância (desliga o default do Core) |
+|---|---|---|
+| Anonimização | Parcial — mascara identificadores diretos (CPF, matrícula, e-mail, telefone); nome do manifestante permanece visível | `PartialAnonymizationStrategy` |
+| Categorização | Heurística de palavras-chave em categorias institucionais: `INFRAESTRUTURA`, `MATRICULA`, `ATENDIMENTO`, `ACADEMICO`, `FINANCEIRO`, `OUTROS`; `riskLevel` sempre `null`. Disparada por listener síncrono do `ManifestationCreatedEvent` | `UniversityCategorizationStrategy` |
+| Conflito de interesse | Impedimento quando analista e denunciado são da mesma unidade acadêmica | `SameUnitConflictOfInterestStrategy` |
+| Designação | Mantém o default manual do Core (não é ponto customizado nesta instância) | — |
+| Workflow | Mediação interna (`IN_REVIEW`); recurso permitido em `RESOLVED` reabre a mediação; prazos de mediação (15d) e recurso (30d) | `UniversityWorkflowTemplate` |
+
+Dados próprios da instância (não existem no Core), para o conflito de interesse:
+- `AcademicMember` (nome + unidade acadêmica) e `ManifestationAccusation` (vincula manifestação → denunciado), com migração Flyway `db/migration/V2`.
+- Endpoints de apoio: `POST/GET /v1/academic-members` e `POST/GET /v1/manifestations/{id}/accusation`.
+
+PostgreSQL local: porta 5434, banco `egide_universitaria`; app na porta 8081.
 
 ---
 

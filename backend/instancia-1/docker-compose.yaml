@@ -1,0 +1,22 @@
+# Sobe apenas o Postgres da Instância 1. A aplicação Spring roda localmente
+# (Maven/IDE) apontando para localhost:5434, com schema gerido por Flyway + ddl-auto=validate.
+services:
+  db:
+    image: 'postgres:18.3-alpine'
+    container_name: egide-instancia1-db
+    environment:
+      POSTGRES_DB: egidedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5434:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d egidedb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

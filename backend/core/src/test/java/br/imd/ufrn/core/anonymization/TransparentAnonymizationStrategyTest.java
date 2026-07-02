@@ -9,31 +9,25 @@ class TransparentAnonymizationStrategyTest {
     private final AnonymizationStrategy strategy = new TransparentAnonymizationStrategy();
 
     @Test
-    void anonymize_deveRetornarOMesmoTexto_independenteDoContexto() {
-        String text = "Fui assediado pelo analista João Silva no departamento de TI.";
-        AnonymizationContext context = new AnonymizationContext(true, "ASSÉDIO");
+    void anonymize_deveRetornarTituloEDescricaoInalterados() {
+        AnonymizationContext context = new AnonymizationContext(
+                true, "ASSÉDIO", "Título original",
+                "Fui assediado pelo analista João Silva no departamento de TI.");
 
-        String result = strategy.anonymize(text, context);
+        AnonymizationResult result = strategy.anonymize(context);
 
-        assertThat(result).isEqualTo(text);
+        assertThat(result.title()).isEqualTo("Título original");
+        assertThat(result.description())
+                .isEqualTo("Fui assediado pelo analista João Silva no departamento de TI.");
     }
 
     @Test
-    void anonymize_deveRetornarAMesmaInstancia() {
-        String text = "Texto qualquer";
-        AnonymizationContext context = new AnonymizationContext(false, "SUGESTÃO");
+    void anonymize_devePropagarNulls() {
+        AnonymizationContext context = new AnonymizationContext(false, "SUGESTÃO", null, null);
 
-        String result = strategy.anonymize(text, context);
+        AnonymizationResult result = strategy.anonymize(context);
 
-        assertThat(result).isSameAs(text);
-    }
-
-    @Test
-    void anonymize_deveRetornarNull_quandoTextoForNull() {
-        AnonymizationContext context = new AnonymizationContext(true, "DENÚNCIA");
-
-        String result = strategy.anonymize(null, context);
-
-        assertThat(result).isNull();
+        assertThat(result.title()).isNull();
+        assertThat(result.description()).isNull();
     }
 }

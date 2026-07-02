@@ -4,7 +4,7 @@ package br.imd.ufrn.core.anonymization;
 public class TransparentAnonymizationStrategy implements AnonymizationStrategy {
 
     @Override
-    public String anonymize(String text, AnonymizationContext context) {
-        return text;
+    public AnonymizationResult anonymize(AnonymizationContext context) {
+        return new AnonymizationResult(context.title(), context.description());
     }
 }
