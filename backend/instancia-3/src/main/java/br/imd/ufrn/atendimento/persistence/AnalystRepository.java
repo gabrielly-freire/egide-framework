@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AnalystRepository extends JpaRepository<Analyst, Long> {
 
     Optional<Analyst> findFirstBySpecialty(String specialty);
+
+    Optional<Analyst> findByEmail(String email);
 }

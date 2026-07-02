@@ -1,5 +1,6 @@
 package br.imd.ufrn.atendimento.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -15,5 +16,9 @@ public record AnalystRequest(
 
         @NotBlank(message = "A região é obrigatória")
         @Size(max = 100, message = "A região deve ter no máximo 100 caracteres")
-        String region
+        String region,
+
+        @NotBlank(message = "O e-mail é obrigatório")
+        @Email(message = "E-mail inválido")
+        String email
 ) {}
