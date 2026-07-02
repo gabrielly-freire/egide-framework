@@ -24,3 +24,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+# Conexão com o microserviço de IA (Égide.IA MS). baseUrl inclui o prefixo /api/v1.
+ai:
+  base-url: ${AI_BASE_URL:http://localhost:8000/api/v1}
+  api-key: ${AI_API_KEY:chave_secreta_egide}
+  connect-timeout-ms: 5000
+  read-timeout-ms: 30000
