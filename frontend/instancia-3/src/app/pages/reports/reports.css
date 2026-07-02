@@ -1,0 +1,123 @@
+.reports-page {
+  max-width: 900px;
+}
+
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gov-primary-dark);
+  margin: 0;
+}
+
+.filter-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  margin-bottom: 24px;
+}
+
+.report-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.total-card {
+  background: var(--gov-primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 32px;
+  text-align: center;
+}
+
+.total-number {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.total-label {
+  font-size: 1rem;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
+.total-period {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.chart-card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--gov-primary-dark);
+}
+
+.bar-item {
+  margin-bottom: 16px;
+}
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.bar-value {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.bar-track {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.bar-fill.badge-status-REGISTERED { background-color: #1351b4; }
+.bar-fill.badge-status-IN_REVIEW   { background-color: #f0a118; }
+.bar-fill.badge-status-RESOLVED    { background-color: #168821; }
+.bar-fill.badge-status-CLOSED      { background-color: #636363; }
+.bar-fill.primary                  { background-color: var(--gov-primary-light); }
+
+.type-tag {
+  font-size: 0.75rem;
+  color: var(--gov-gray);
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 20px;
+}

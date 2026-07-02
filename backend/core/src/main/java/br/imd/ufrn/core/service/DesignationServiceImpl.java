@@ -31,7 +31,7 @@ public class DesignationServiceImpl implements DesignationService {
                 .orElseThrow(() -> new ManifestationNotFoundException(manifestationId));
 
         DesignationContext designationContext = new DesignationContext(
-                manifestationId, manifestation.getType());
+                manifestationId, manifestation.getType(), manifestation.getAffectedRegion());
         Long responsibleId = designationStrategy.resolve(designationContext);
 
         if (responsibleId == null) {

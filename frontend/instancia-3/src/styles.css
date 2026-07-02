@@ -1,0 +1,56 @@
+:root {
+  --gov-primary: #1351b4;
+  --gov-primary-dark: #071d41;
+  --gov-primary-light: #2670e8;
+  --gov-success: #168821;
+  --gov-warning: #f0a118;
+  --gov-danger: #e52207;
+  --gov-gray: #636363;
+  --gov-bg: #f0f0f0;
+  --sidebar-width: 250px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Rawline', 'Raleway', Calibri, 'Gill Sans MT', 'Trebuchet MS', sans-serif;
+  background-color: var(--gov-bg);
+  color: #333;
+}
+
+.btn-gov {
+  background-color: var(--gov-primary);
+  color: #fff;
+  border: none;
+}
+
+.btn-gov:hover {
+  background-color: var(--gov-primary-dark);
+  color: #fff;
+}
+
+.badge-status-REGISTERED { background-color: #1351b4; }
+.badge-status-IN_REVIEW   { background-color: #f0a118; color: #333; }
+.badge-status-RESOLVED    { background-color: #168821; }
+.badge-status-CLOSED      { background-color: #636363; }
+
+.page-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}

@@ -49,23 +49,25 @@ public abstract class WorkflowTemplate {
      *
      * <p>Algoritmo fixo:
      * <ol>
-     *   <li>Rejeita o recurso se {@link #isAppealAllowed} retornar {@code false} para o status
-     *       atual.</li>
+     *   <li>Rejeita o recurso se {@link #isAppealAllowed} retornar {@code false} para a
+     *       manifestação atual (status e/ou histórico de recursos já interpostos).</li>
      *   <li>Delega a determinação do status de recurso a {@link #resolveAppealStatus}.</li>
      *   <li>Chama o hook {@link #onBeforeAppeal} antes de retornar.</li>
+     *   <li>Incrementa o contador de recursos da manifestação.</li>
      *   <li>Retorna {@link WorkflowStepResult} com o status de recurso e o prazo associado.</li>
      * </ol>
      *
      * @param manifestation a manifestação sobre a qual o recurso é interposto
      * @return resultado com o status de recurso e o prazo associado (pode ser {@code null})
-     * @throws WorkflowAppealNotAllowedException se o recurso não for permitido no status atual
+     * @throws WorkflowAppealNotAllowedException se o recurso não for permitido no estado atual
      */
     public final WorkflowStepResult appeal(Manifestation manifestation) {
-        if (!isAppealAllowed(manifestation.getStatus())) {
+        if (!isAppealAllowed(manifestation)) {
             throw new WorkflowAppealNotAllowedException(manifestation.getId());
         }
         ManifestationStatus appealStatus = resolveAppealStatus(manifestation.getStatus());
         onBeforeAppeal(manifestation, appealStatus);
+        manifestation.setAppealCount(manifestation.getAppealCount() + 1);
         return new WorkflowStepResult(appealStatus, deadlineFor(appealStatus));
     }
 
@@ -111,12 +113,17 @@ public abstract class WorkflowTemplate {
     protected abstract ManifestationStatus resolveAppealStatus(ManifestationStatus current);
 
     /**
-     * Indica se é permitido interpor recurso para o status informado.
+     * Indica se é permitido interpor recurso para a manifestação informada.
      *
-     * @param status o status atual da manifestação
-     * @return {@code true} se o recurso for permitido neste status
+     * <p>Recebe a manifestação (não apenas o status) para que implementações possam limitar a
+     * quantidade de recursos permitidos consultando {@link Manifestation#getAppealCount()} —
+     * por exemplo, workflows baseados na LAI que admitem recurso em até três instâncias
+     * administrativas.
+     *
+     * @param manifestation a manifestação sobre a qual o recurso seria interposto
+     * @return {@code true} se o recurso for permitido neste estado
      */
-    protected abstract boolean isAppealAllowed(ManifestationStatus status);
+    protected abstract boolean isAppealAllowed(Manifestation manifestation);
 
     /**
      * Retorna o prazo para conclusão da fase identificada pelo status informado.

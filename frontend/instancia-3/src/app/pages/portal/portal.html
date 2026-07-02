@@ -1,0 +1,202 @@
+<div class="portal-page">
+  <!-- Header -->
+  <header class="portal-header">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi bi-shield-check header-icon"></i>
+          <div>
+            <h1 class="mb-0">Ouvidoria Pública</h1>
+            <small>Sistema de Atendimento ao Cidadão</small>
+          </div>
+        </div>
+        <a routerLink="/login" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-lock me-1"></i>Área Restrita
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container portal-content">
+    <!-- Tabs -->
+    <div class="portal-tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'submit'"
+        (click)="activeTab.set('submit')"
+      >
+        <i class="bi bi-pencil-square me-2"></i>Registrar Manifestação
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'track'"
+        (click)="activeTab.set('track')"
+      >
+        <i class="bi bi-search me-2"></i>Acompanhar Protocolo
+      </button>
+    </div>
+
+    <!-- Submit Tab -->
+    @if (activeTab() === 'submit') {
+      <div class="portal-card">
+        @if (submitted()) {
+          <div class="success-box">
+            <i class="bi bi-check-circle-fill success-icon"></i>
+            <h3>Manifestação Registrada!</h3>
+            <p>Seu protocolo é:</p>
+            <div class="protocol-badge">{{ submitted()!.protocolNumber }}</div>
+            <p class="text-muted mt-2">Guarde este número para acompanhar o status da sua manifestação.</p>
+            <button class="btn btn-gov mt-3" (click)="newSubmission()">
+              <i class="bi bi-plus-circle me-2"></i>Nova Manifestação
+            </button>
+          </div>
+        } @else {
+          <h2 class="card-title"><i class="bi bi-megaphone me-2"></i>Nova Manifestação</h2>
+          <p class="text-muted mb-4">
+            Registre sua reclamação, sugestão, elogio, denúncia ou solicitação. Você não precisa
+            criar uma conta.
+          </p>
+
+          @if (submitError()) {
+            <div class="alert alert-danger">{{ submitError() }}</div>
+          }
+
+          <form [formGroup]="submitForm" (ngSubmit)="submit()" novalidate>
+            <div class="mb-3">
+              <label class="form-label">Tipo de Manifestação <span class="text-danger">*</span></label>
+              <div class="type-grid">
+                @for (opt of [
+                  { value: 'RECLAMACAO', icon: 'bi-exclamation-circle', label: 'Reclamação' },
+                  { value: 'SUGESTAO', icon: 'bi-lightbulb', label: 'Sugestão' },
+                  { value: 'ELOGIO', icon: 'bi-hand-thumbs-up', label: 'Elogio' },
+                  { value: 'DENUNCIA', icon: 'bi-shield-exclamation', label: 'Denúncia' },
+                  { value: 'SOLICITACAO', icon: 'bi-clipboard-check', label: 'Solicitação' }
+                ]; track opt.value) {
+                  <label class="type-option" [class.selected]="submitForm.controls.type.value === opt.value">
+                    <input type="radio" formControlName="type" [value]="opt.value" hidden />
+                    <i [class]="'bi ' + opt.icon"></i>
+                    <span>{{ opt.label }}</span>
+                  </label>
+                }
+              </div>
+              @if (submitForm.controls.type.invalid && submitForm.controls.type.touched) {
+                <div class="text-danger small mt-1">Selecione o tipo.</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label for="title" class="form-label">Título <span class="text-danger">*</span></label>
+              <input
+                id="title"
+                type="text"
+                class="form-control"
+                [class.is-invalid]="submitForm.controls.title.invalid && submitForm.controls.title.touched"
+                formControlName="title"
+                placeholder="Resuma sua manifestação em uma frase"
+                maxlength="255"
+              />
+              @if (submitForm.controls.title.invalid && submitForm.controls.title.touched) {
+                <div class="invalid-feedback">Título obrigatório.</div>
+              }
+            </div>
+
+            <div class="mb-4">
+              <label for="description" class="form-label">
+                Descrição <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="description"
+                class="form-control"
+                [class.is-invalid]="submitForm.controls.description.invalid && submitForm.controls.description.touched"
+                formControlName="description"
+                rows="5"
+                placeholder="Descreva sua manifestação com detalhes. Quanto mais informações, melhor poderemos atendê-la."
+                maxlength="2000"
+              ></textarea>
+              @if (submitForm.controls.description.invalid && submitForm.controls.description.touched) {
+                <div class="invalid-feedback">Descrição obrigatória.</div>
+              }
+            </div>
+
+            <div class="mb-4">
+              <label for="affectedRegion" class="form-label">Região afetada</label>
+              <input
+                id="affectedRegion"
+                type="text"
+                class="form-control"
+                formControlName="affectedRegion"
+                placeholder="Ex.: Norte, Nordeste, Centro-Oeste, Sudeste, Sul"
+                maxlength="100"
+              />
+              <div class="form-text">Opcional — ajuda a direcionar a manifestação a um analista da região quando não houver um especialista disponível.</div>
+            </div>
+
+            <button type="submit" class="btn btn-gov px-5" [disabled]="submitting()">
+              @if (submitting()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>Enviando…
+              } @else {
+                <i class="bi bi-send me-2"></i>Enviar Manifestação
+              }
+            </button>
+          </form>
+        }
+      </div>
+    }
+
+    <!-- Track Tab -->
+    @if (activeTab() === 'track') {
+      <div class="portal-card">
+        <h2 class="card-title"><i class="bi bi-search me-2"></i>Acompanhar Manifestação</h2>
+        <p class="text-muted mb-4">
+          Informe o número de protocolo recebido no momento do registro.
+        </p>
+
+        <form [formGroup]="trackForm" (ngSubmit)="track()" class="d-flex gap-2 mb-4" novalidate>
+          <input
+            type="text"
+            class="form-control"
+            [class.is-invalid]="trackForm.controls.protocol.invalid && trackForm.controls.protocol.touched"
+            formControlName="protocol"
+            placeholder="Ex.: 2025-AB12CD34EF"
+          />
+          <button type="submit" class="btn btn-gov px-4" [disabled]="tracking()">
+            @if (tracking()) {
+              <span class="spinner-border spinner-border-sm"></span>
+            } @else {
+              <i class="bi bi-search"></i>
+            }
+          </button>
+        </form>
+
+        @if (trackError()) {
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ trackError() }}
+          </div>
+        }
+
+        @if (tracked()) {
+          <div class="track-result">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <span class="protocol-label">Protocolo</span>
+                <div class="protocol-number">{{ tracked()!.protocolNumber }}</div>
+              </div>
+              <span class="badge text-white {{ statusClass(tracked()!.status) }} px-3 py-2">
+                {{ statusLabel(tracked()!.status) }}
+              </span>
+            </div>
+            <div class="mb-2">
+              <strong>{{ tracked()!.title }}</strong>
+            </div>
+            <div class="text-muted small">
+              <i class="bi bi-tag me-1"></i>{{ TYPE_LABELS[tracked()!.type] ?? tracked()!.type }}
+              &nbsp;·&nbsp;
+              <i class="bi bi-calendar me-1"></i>
+              {{ tracked()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
