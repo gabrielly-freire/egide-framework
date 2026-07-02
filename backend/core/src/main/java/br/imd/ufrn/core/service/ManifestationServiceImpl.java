@@ -11,6 +11,9 @@ import br.imd.ufrn.core.event.ManifestationCreatedEvent;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
 import br.imd.ufrn.core.mapper.ManifestationMapper;
 import br.imd.ufrn.core.persistence.ManifestationRepository;
+import br.imd.ufrn.core.workflow.WorkflowTemplate;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ public class ManifestationServiceImpl implements ManifestationService {
     private final ManifestationMapper mapper;
     private final AnonymizationStrategy anonymizationStrategy;
     private final ApplicationEventPublisher eventPublisher;
+    private final WorkflowTemplate workflowTemplate;
 
     @Override
     public ManifestationResponse create(ManifestationRequest request) {
@@ -40,6 +44,10 @@ public class ManifestationServiceImpl implements ManifestationService {
                 request.anonymous(), request.type(), request.title(), request.description()));
         entity.setTitle(anonymized.title());
         entity.setDescription(anonymized.description());
+        Duration initialDeadline = workflowTemplate.initialDeadline();
+        if (initialDeadline != null) {
+            entity.setDeadlineAt(LocalDateTime.now().plus(initialDeadline));
+        }
         Manifestation saved = repository.save(entity);
         eventPublisher.publishEvent(new ManifestationCreatedEvent(saved.getId()));
         return mapper.toResponse(saved);

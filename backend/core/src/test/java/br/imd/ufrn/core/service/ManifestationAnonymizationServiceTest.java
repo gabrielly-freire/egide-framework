@@ -15,6 +15,7 @@ import br.imd.ufrn.core.dto.ManifestationResponse;
 import br.imd.ufrn.core.event.ManifestationCreatedEvent;
 import br.imd.ufrn.core.mapper.ManifestationMapper;
 import br.imd.ufrn.core.persistence.ManifestationRepository;
+import br.imd.ufrn.core.workflow.WorkflowTemplate;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ class ManifestationAnonymizationServiceTest {
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private WorkflowTemplate workflowTemplate;
 
     @InjectMocks
     private ManifestationServiceImpl service;
@@ -65,7 +69,7 @@ class ManifestationAnonymizationServiceTest {
 
         response = new ManifestationResponse(
                 1L, "2026-ABCDE12345", "Título", DESCRICAO_ANONIMIZADA,
-                "ASSÉDIO", ManifestationStatus.REGISTERED, null, null, null, null);
+                "ASSÉDIO", ManifestationStatus.REGISTERED, null, null, null, null, null);
     }
 
     @Test

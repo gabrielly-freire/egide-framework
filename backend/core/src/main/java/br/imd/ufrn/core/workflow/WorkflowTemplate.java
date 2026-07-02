@@ -69,6 +69,17 @@ public abstract class WorkflowTemplate {
         return new WorkflowStepResult(appealStatus, deadlineFor(appealStatus));
     }
 
+    /**
+     * Prazo da fase inicial ({@link ManifestationStatus#REGISTERED}), usado pelo Core ao registrar
+     * uma manifestação para carimbar o prazo de triagem. Retorna {@code null} quando a fase inicial
+     * não define prazo (comportamento do {@link DefaultWorkflowTemplate}).
+     *
+     * @return duração do prazo da fase inicial, ou {@code null}
+     */
+    public final Duration initialDeadline() {
+        return deadlineFor(ManifestationStatus.REGISTERED);
+    }
+
     // ── Passo fixo auxiliar ──────────────────────────────────────────────────
 
     /**

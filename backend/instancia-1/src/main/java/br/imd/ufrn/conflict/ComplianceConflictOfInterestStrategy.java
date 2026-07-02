@@ -68,6 +68,6 @@ public class ComplianceConflictOfInterestStrategy implements ConflictOfInterestS
     }
 
     private boolean outranks(AppUser accused, AppUser analyst) {
-        return accused.getRole().ordinal() > analyst.getRole().ordinal();
+        return accused.getRole().getLevel() > analyst.getRole().getLevel();
     }
 }

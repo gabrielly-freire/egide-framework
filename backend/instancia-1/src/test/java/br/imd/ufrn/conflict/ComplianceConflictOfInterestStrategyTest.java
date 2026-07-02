@@ -99,4 +99,25 @@ class ComplianceConflictOfInterestStrategyTest {
 
         assertThat(strategy.hasConflict(ctx(1L))).isFalse();
     }
+
+    @Test
+    void hasConflict_quandoAcusadoOuvidorGeralSuperaAnalistaManager() {
+        // GENERAL_LISTENER está acima de MANAGER na hierarquia (level 3 > 2).
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user(1L, Role.MANAGER, 10L)));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user(2L, Role.GENERAL_LISTENER, 20L)));
+        when(accusationRepository.findByManifestationId(MANIFESTATION_ID))
+                .thenReturn(List.of(accusation(2L)));
+
+        assertThat(strategy.hasConflict(ctx(1L))).isTrue();
+    }
+
+    @Test
+    void hasConflict_falso_quandoAnalistaOuvidorGeralNaoEhSuperadoPorManager() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user(1L, Role.GENERAL_LISTENER, 10L)));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user(2L, Role.MANAGER, 20L)));
+        when(accusationRepository.findByManifestationId(MANIFESTATION_ID))
+                .thenReturn(List.of(accusation(2L)));
+
+        assertThat(strategy.hasConflict(ctx(1L))).isFalse();
+    }
 }

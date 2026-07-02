@@ -126,7 +126,7 @@ O Core (`backend/core`, pacote `br.imd.ufrn.core`) já implementa **todos os pon
 - `AnonymizationStrategy` → default `TransparentAnonymizationStrategy` (não anonimiza)
 - `ConflictOfInterestStrategy` → default `NoConflictOfInterestStrategy`
 - `DesignationStrategy` → default `ManualDesignationStrategy` (retorna `null` = designação manual)
-- `WorkflowTemplate` (abstrata, Template Method) → default `DefaultWorkflowTemplate`
+- `WorkflowTemplate` (abstrata, Template Method) → default `DefaultWorkflowTemplate`. O `deadlineFor(status)` de cada instância define a duração de cada fase; o Core carimba o prazo absoluto (`now + Duration`) no campo `deadlineAt` da `Manifestation` — no `create` (fase inicial, via `initialDeadline()`) e a cada `advance`/`appeal`. `null` quando a fase não tem prazo.
 - `CategorizationStrategy` → default `NoOpCategorizationStrategy` (não classifica); resultado (`category`/`riskLevel`, ambos `String` nullable) gravado na `Manifestation` pelo `CategorizationService`. Gancho: `create()` publica `ManifestationCreatedEvent`; a instância escuta de forma assíncrona para disparar a IA.
 
 Defaults registrados em `config/CoreAutoConfiguration` (`@AutoConfiguration`), listada em

@@ -14,6 +14,8 @@ import br.imd.ufrn.core.mapper.ManifestationMapper;
 import br.imd.ufrn.core.persistence.ManifestationRepository;
 import br.imd.ufrn.core.workflow.WorkflowStepResult;
 import br.imd.ufrn.core.workflow.WorkflowTemplate;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +50,7 @@ class WorkflowServiceTest {
 
         response = new ManifestationResponse(
                 1L, "2026-ABCDE12345", "Título", "Descrição",
-                "RECLAMAÇÃO", ManifestationStatus.IN_REVIEW, null, null, null, null);
+                "RECLAMAÇÃO", ManifestationStatus.IN_REVIEW, null, null, null, null, null);
     }
 
     @Test
@@ -63,6 +65,19 @@ class WorkflowServiceTest {
 
         assertThat(actual).isEqualTo(response);
         verify(repository).save(any(Manifestation.class));
+    }
+
+    @Test
+    void advance_deveCarimbarPrazo_quandoTemplateDefineDuracao() {
+        WorkflowStepResult result = new WorkflowStepResult(ManifestationStatus.IN_REVIEW, Duration.ofDays(15));
+        when(repository.findById(1L)).thenReturn(Optional.of(manifestation));
+        when(workflowTemplate.advance(manifestation)).thenReturn(result);
+        when(repository.save(any(Manifestation.class))).thenReturn(manifestation);
+        when(mapper.toResponse(manifestation)).thenReturn(response);
+
+        service.advance(1L);
+
+        assertThat(manifestation.getDeadlineAt()).isNotNull().isAfter(LocalDateTime.now());
     }
 
     @Test
