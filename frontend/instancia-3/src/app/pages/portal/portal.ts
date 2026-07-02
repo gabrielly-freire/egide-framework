@@ -25,6 +25,7 @@ export class PortalPage {
     title: ['', [Validators.required, Validators.maxLength(255)]],
     description: ['', [Validators.required, Validators.maxLength(2000)]],
     type: ['', Validators.required],
+    affectedRegion: ['', Validators.maxLength(100)],
   });
 
   protected submitting = signal(false);
@@ -49,9 +50,14 @@ export class PortalPage {
     this.submitting.set(true);
     this.submitError.set('');
 
-    const { title, description, type } = this.submitForm.getRawValue();
+    const { title, description, type, affectedRegion } = this.submitForm.getRawValue();
     this.manifestationService
-      .create({ title: title!, description: description!, type: type! as any })
+      .create({
+        title: title!,
+        description: description!,
+        type: type! as any,
+        affectedRegion: affectedRegion || undefined,
+      })
       .subscribe({
         next: res => {
           this.submitted.set(res);

@@ -5,6 +5,8 @@ CREATE TABLE manifestations (
     description TEXT NOT NULL,
     type        VARCHAR(100) NOT NULL,
     status      VARCHAR(50)  NOT NULL,
+    category    VARCHAR(255),
+    risk_level  VARCHAR(255),
     active      BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMP    NOT NULL,
     updated_at  TIMESTAMP    NOT NULL
@@ -48,4 +50,27 @@ CREATE TABLE audit_entries (
     action            VARCHAR(255) NOT NULL,
     description       TEXT,
     occurred_at       TIMESTAMP NOT NULL
+);
+
+CREATE TABLE analysts (
+    id            BIGSERIAL PRIMARY KEY,
+    name          VARCHAR(255) NOT NULL,
+    specialty     VARCHAR(100) NOT NULL,
+    region        VARCHAR(100) NOT NULL,
+    email         VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role          VARCHAR(50)  NOT NULL DEFAULT 'ANALYST',
+    active        BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMP NOT NULL,
+    updated_at    TIMESTAMP NOT NULL
+);
+
+CREATE TABLE legal_impediments (
+    id                BIGSERIAL PRIMARY KEY,
+    manifestation_id  BIGINT NOT NULL,
+    analyst_id        BIGINT NOT NULL REFERENCES analysts(id),
+    reason            VARCHAR(50) NOT NULL,
+    active            BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at        TIMESTAMP NOT NULL,
+    updated_at        TIMESTAMP NOT NULL
 );

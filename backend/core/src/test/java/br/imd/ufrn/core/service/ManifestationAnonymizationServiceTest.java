@@ -54,8 +54,8 @@ class ManifestationAnonymizationServiceTest {
 
     @BeforeEach
     void setUp() {
-        requestAnonimo = new ManifestationRequest("Título", DESCRICAO_ORIGINAL, "ASSÉDIO", true);
-        requestIdentificado = new ManifestationRequest("Título", DESCRICAO_ORIGINAL, "ASSÉDIO", false);
+        requestAnonimo = new ManifestationRequest("Título", DESCRICAO_ORIGINAL, "ASSÉDIO", true, null);
+        requestIdentificado = new ManifestationRequest("Título", DESCRICAO_ORIGINAL, "ASSÉDIO", false, null);
 
         entity = new Manifestation();
         entity.setId(1L);
@@ -64,7 +64,7 @@ class ManifestationAnonymizationServiceTest {
 
         response = new ManifestationResponse(
                 1L, "2026-ABCDE12345", "Título", DESCRICAO_ANONIMIZADA,
-                "ASSÉDIO", ManifestationStatus.REGISTERED, null, null, null, null);
+                "ASSÉDIO", ManifestationStatus.REGISTERED, null, null, null, null, null, null);
     }
 
     @Test

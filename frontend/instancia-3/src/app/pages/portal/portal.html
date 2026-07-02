@@ -118,6 +118,19 @@
               }
             </div>
 
+            <div class="mb-4">
+              <label for="affectedRegion" class="form-label">Região afetada</label>
+              <input
+                id="affectedRegion"
+                type="text"
+                class="form-control"
+                formControlName="affectedRegion"
+                placeholder="Ex.: Norte, Nordeste, Centro-Oeste, Sudeste, Sul"
+                maxlength="100"
+              />
+              <div class="form-text">Opcional — ajuda a direcionar a manifestação a um analista da região quando não houver um especialista disponível.</div>
+            </div>
+
             <button type="submit" class="btn btn-gov px-5" [disabled]="submitting()">
               @if (submitting()) {
                 <span class="spinner-border spinner-border-sm me-2"></span>Enviando…

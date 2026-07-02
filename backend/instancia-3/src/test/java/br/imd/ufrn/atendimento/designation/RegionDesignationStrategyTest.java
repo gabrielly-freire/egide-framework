@@ -29,16 +29,39 @@ class RegionDesignationStrategyTest {
         analyst.setSpecialty("SAUDE");
         when(repository.findFirstBySpecialty("SAUDE")).thenReturn(Optional.of(analyst));
 
-        DesignationContext context = new DesignationContext(1L, "SAUDE");
+        DesignationContext context = new DesignationContext(1L, "SAUDE", "Norte");
 
         assertThat(strategy.resolve(context)).isEqualTo(10L);
     }
 
     @Test
-    void resolve_deveRetornarNull_quandoNaoHaAnalistaNaEspecialidade() {
+    void resolve_deveRetornarIdDoAnalista_quandoEspecialidadeNaoEncontradaMasRegiaoSim() {
+        Analyst analyst = new Analyst();
+        analyst.setId(20L);
+        analyst.setRegion("Norte");
+        when(repository.findFirstBySpecialty("SEGURANCA")).thenReturn(Optional.empty());
+        when(repository.findFirstByRegion("Norte")).thenReturn(Optional.of(analyst));
+
+        DesignationContext context = new DesignationContext(1L, "SEGURANCA", "Norte");
+
+        assertThat(strategy.resolve(context)).isEqualTo(20L);
+    }
+
+    @Test
+    void resolve_deveRetornarNull_quandoNaoHaAnalistaNaEspecialidadeNemRegiaoInformada() {
         when(repository.findFirstBySpecialty("SEGURANCA")).thenReturn(Optional.empty());
 
-        DesignationContext context = new DesignationContext(1L, "SEGURANCA");
+        DesignationContext context = new DesignationContext(1L, "SEGURANCA", null);
+
+        assertThat(strategy.resolve(context)).isNull();
+    }
+
+    @Test
+    void resolve_deveRetornarNull_quandoNaoHaAnalistaNaEspecialidadeNemNaRegiao() {
+        when(repository.findFirstBySpecialty("SEGURANCA")).thenReturn(Optional.empty());
+        when(repository.findFirstByRegion("Sul")).thenReturn(Optional.empty());
+
+        DesignationContext context = new DesignationContext(1L, "SEGURANCA", "Sul");
 
         assertThat(strategy.resolve(context)).isNull();
     }

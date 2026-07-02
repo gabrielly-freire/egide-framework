@@ -1,5 +1,6 @@
 package br.imd.ufrn.core.workflow;
 
+import br.imd.ufrn.core.domain.Manifestation;
 import br.imd.ufrn.core.domain.ManifestationStatus;
 import java.time.Duration;
 
@@ -31,7 +32,7 @@ public class DefaultWorkflowTemplate extends WorkflowTemplate {
     }
 
     @Override
-    protected boolean isAppealAllowed(ManifestationStatus status) {
+    protected boolean isAppealAllowed(Manifestation manifestation) {
         return false;
     }
 

@@ -8,5 +8,7 @@ public interface AnalystRepository extends JpaRepository<Analyst, Long> {
 
     Optional<Analyst> findFirstBySpecialty(String specialty);
 
+    Optional<Analyst> findFirstByRegion(String region);
+
     Optional<Analyst> findByEmail(String email);
 }

@@ -11,6 +11,7 @@ export interface ManifestationRequest {
   title: string;
   description: string;
   type: ManifestationType;
+  affectedRegion?: string;
 }
 
 export interface ManifestationResponse {

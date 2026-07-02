@@ -78,6 +78,35 @@ class PublicServiceWorkflowTemplateTest {
     }
 
     @Test
+    void appeal_deveIncrementarContadorDeRecursos() {
+        manifestation.setStatus(ManifestationStatus.IN_REVIEW);
+
+        template.appeal(manifestation);
+
+        assertThat(manifestation.getAppealCount()).isEqualTo(1);
+    }
+
+    @Test
+    void appeal_devePermitirAteATerceiraInstanciaAdministrativa() {
+        manifestation.setStatus(ManifestationStatus.IN_REVIEW);
+        manifestation.setAppealCount(2);
+
+        WorkflowStepResult result = template.appeal(manifestation);
+
+        assertThat(result.nextStatus()).isEqualTo(ManifestationStatus.IN_REVIEW);
+        assertThat(manifestation.getAppealCount()).isEqualTo(3);
+    }
+
+    @Test
+    void appeal_naoDevePermitir_apósAsTresInstanciasAdministrativas() {
+        manifestation.setStatus(ManifestationStatus.IN_REVIEW);
+        manifestation.setAppealCount(3);
+
+        assertThatThrownBy(() -> template.appeal(manifestation))
+                .isInstanceOf(WorkflowAppealNotAllowedException.class);
+    }
+
+    @Test
     void appeal_naoDevePermitir_quandoRegistered() {
         manifestation.setStatus(ManifestationStatus.REGISTERED);
 

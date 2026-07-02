@@ -40,4 +40,10 @@ public class Manifestation extends BaseEntity {
 
     @Column(length = 50)
     private String riskLevel;
+
+    @Column(length = 100)
+    private String affectedRegion;
+
+    @Column(nullable = false)
+    private Integer appealCount = 0;
 }
