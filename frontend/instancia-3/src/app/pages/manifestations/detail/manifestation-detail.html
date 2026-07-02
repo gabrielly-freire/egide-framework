@@ -1,0 +1,89 @@
+<div class="detail-page">
+  <div class="page-header">
+    <a routerLink="/manifestacoes" class="btn btn-sm btn-outline-secondary me-3">
+      <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+    <h2><i class="bi bi-file-earmark-text me-2"></i>Detalhes da Manifestação</h2>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
+  } @else if (manifestation()) {
+    <div class="detail-grid">
+      <!-- Main info -->
+      <div class="detail-card main-card">
+        <div class="card-top">
+          <div>
+            <span class="protocol-label">Protocolo</span>
+            <div class="protocol-number">{{ manifestation()!.protocolNumber }}</div>
+          </div>
+          <span class="badge text-white fs-6 {{ statusClass(manifestation()!.status) }} px-3 py-2">
+            {{ STATUS_LABELS[manifestation()!.status] }}
+          </span>
+        </div>
+
+        <h3 class="manifestation-title">{{ manifestation()!.title }}</h3>
+
+        <div class="meta-row">
+          <span class="meta-item">
+            <i class="bi bi-tag"></i>
+            {{ TYPE_LABELS[manifestation()!.type] ?? manifestation()!.type }}
+          </span>
+          <span class="meta-item">
+            <i class="bi bi-calendar"></i>
+            Registrada em {{ manifestation()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+          </span>
+          <span class="meta-item">
+            <i class="bi bi-clock"></i>
+            Atualizada em {{ manifestation()!.updatedAt | date: 'dd/MM/yyyy HH:mm' }}
+          </span>
+        </div>
+
+        <div class="description-section">
+          <h4>Descrição</h4>
+          <p>{{ manifestation()!.description }}</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-card">
+        <h4><i class="bi bi-gear me-2"></i>Ações</h4>
+
+        <div class="status-section">
+          <label class="form-label fw-semibold">Alterar Status</label>
+          <div class="status-options">
+            @for (s of statuses; track s) {
+              <button
+                class="status-btn"
+                [class.active]="manifestation()!.status === s"
+                [class]="'status-btn ' + statusClass(s)"
+                (click)="updateStatus(s)"
+              >
+                {{ STATUS_LABELS[s] }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <hr />
+
+        <button
+          class="btn btn-outline-danger w-100"
+          (click)="delete()"
+          [disabled]="deleting()"
+        >
+          @if (deleting()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          } @else {
+            <i class="bi bi-trash me-2"></i>
+          }
+          Excluir Manifestação
+        </button>
+      </div>
+    </div>
+  }
+</div>

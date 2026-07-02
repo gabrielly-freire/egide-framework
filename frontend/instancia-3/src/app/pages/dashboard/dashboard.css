@@ -1,0 +1,136 @@
+.dashboard-page {
+  max-width: 1100px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gov-primary-dark);
+  margin: 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  border-left: 4px solid;
+}
+
+.stat-card.total      { border-left-color: var(--gov-primary); }
+.stat-card.registered { border-left-color: #1351b4; }
+.stat-card.in-review  { border-left-color: var(--gov-warning); }
+.stat-card.resolved   { border-left-color: var(--gov-success); }
+
+.stat-icon {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.stat-card.total      .stat-icon { color: var(--gov-primary); }
+.stat-card.registered .stat-icon { color: #1351b4; }
+.stat-card.in-review  .stat-icon { color: var(--gov-warning); }
+.stat-card.resolved   .stat-icon { color: var(--gov-success); }
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--gov-gray);
+  margin-top: 4px;
+}
+
+.section-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.section-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--gov-primary-dark);
+}
+
+.table {
+  margin: 0;
+}
+
+.table thead th {
+  background: #f8f9fa;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gov-gray);
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.table tbody td {
+  padding: 12px 16px;
+}
+
+.protocol-code {
+  font-size: 0.8rem;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.title-cell {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.type-tag {
+  font-size: 0.75rem;
+  color: var(--gov-gray);
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  color: var(--gov-gray);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+.empty-state p {
+  margin-top: 8px;
+}

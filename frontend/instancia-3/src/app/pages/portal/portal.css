@@ -1,0 +1,154 @@
+.portal-page {
+  min-height: 100vh;
+  background: var(--gov-bg);
+}
+
+.portal-header {
+  background: var(--gov-primary);
+  color: #fff;
+  padding: 20px 0;
+}
+
+.header-icon {
+  font-size: 2.5rem;
+}
+
+.portal-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.portal-header small {
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+.portal-content {
+  padding: 32px 16px;
+  max-width: 760px;
+}
+
+.portal-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: var(--gov-gray);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+
+.tab-btn.active {
+  color: var(--gov-primary);
+  border-bottom-color: var(--gov-primary);
+  font-weight: 600;
+}
+
+.portal-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gov-primary-dark);
+  margin-bottom: 8px;
+}
+
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.type-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.type-option i {
+  font-size: 1.5rem;
+  color: var(--gov-primary);
+}
+
+.type-option:hover {
+  border-color: var(--gov-primary-light);
+  background: #f0f6ff;
+}
+
+.type-option.selected {
+  border-color: var(--gov-primary);
+  background: #e8f0fe;
+  color: var(--gov-primary);
+  font-weight: 600;
+}
+
+.success-box {
+  text-align: center;
+  padding: 20px;
+}
+
+.success-icon {
+  font-size: 4rem;
+  color: var(--gov-success);
+}
+
+.success-box h3 {
+  margin: 16px 0 8px;
+  font-weight: 700;
+}
+
+.protocol-badge {
+  display: inline-block;
+  background: var(--gov-primary-dark);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 8px;
+  letter-spacing: 2px;
+  margin: 8px 0;
+}
+
+.track-result {
+  background: var(--gov-bg);
+  border-radius: 8px;
+  padding: 20px;
+  border-left: 4px solid var(--gov-primary);
+}
+
+.protocol-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gov-gray);
+}
+
+.protocol-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gov-primary-dark);
+}
