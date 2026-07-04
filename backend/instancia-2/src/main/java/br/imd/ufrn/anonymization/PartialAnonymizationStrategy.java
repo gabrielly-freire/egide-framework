@@ -1,6 +1,7 @@
 package br.imd.ufrn.anonymization;
 
 import br.imd.ufrn.core.anonymization.AnonymizationContext;
+import br.imd.ufrn.core.anonymization.AnonymizationResult;
 import br.imd.ufrn.core.anonymization.AnonymizationStrategy;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Diferente do mascaramento estrito do Compliance, o sigilo aqui é parcial: o relato
  * continua legível, mas os <em>identificadores diretos</em> que exporiam o manifestante ou
- * terceiros são substituídos por marcadores. São mascarados, no texto da descrição:
+ * terceiros são substituídos por marcadores. São mascarados, no título e na descrição:
  *
  * <ul>
  *   <li><b>CPF</b> (formato {@code 000.000.000-00}) &rarr; {@code [CPF]}</li>
@@ -49,7 +50,11 @@ public class PartialAnonymizationStrategy implements AnonymizationStrategy {
             Pattern.compile("(?i)(matr[íi]cula\\D{0,8}?)\\d+");
 
     @Override
-    public String anonymize(String text, AnonymizationContext context) {
+    public AnonymizationResult anonymize(AnonymizationContext context) {
+        return new AnonymizationResult(mask(context.title()), mask(context.description()));
+    }
+
+    private String mask(String text) {
         if (text == null) {
             return null;
         }

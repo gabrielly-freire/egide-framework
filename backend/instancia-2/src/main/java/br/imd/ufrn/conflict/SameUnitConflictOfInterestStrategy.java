@@ -46,6 +46,6 @@ public class SameUnitConflictOfInterestStrategy implements ConflictOfInterestStr
             return false;
         }
 
-        return analyst.get().getUnit().equalsIgnoreCase(accused.get().getUnit());
+        return analyst.get().getUnit().equalsIgnoreCase(accused.get().getUnit()); // verificar necessidade
     }
 }
