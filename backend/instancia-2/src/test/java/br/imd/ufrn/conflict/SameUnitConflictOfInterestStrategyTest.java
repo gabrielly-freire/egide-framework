@@ -33,7 +33,8 @@ class SameUnitConflictOfInterestStrategyTest {
     private SameUnitConflictOfInterestStrategy strategy;
 
     private ConflictOfInterestContext context() {
-        return new ConflictOfInterestContext(MANIFESTATION_ID, ANALYST_ID, "RECLAMACAO");
+        return new ConflictOfInterestContext(
+                MANIFESTATION_ID, ANALYST_ID, "RECLAMACAO", java.util.List.of());
     }
 
     private AcademicMember member(Long id, String unit) {
