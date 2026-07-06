@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import br.imd.ufrn.core.conflict.ConflictOfInterestContext;
-import br.imd.ufrn.domain.AcademicMember;
-import br.imd.ufrn.persistence.AcademicMemberRepository;
+import br.imd.ufrn.core.domain.Party;
+import br.imd.ufrn.core.persistence.PartyRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class SameUnitConflictOfInterestStrategyTest {
     private static final Long ACCUSED_ID = 2L;
 
     @Mock
-    private AcademicMemberRepository memberRepository;
+    private PartyRepository partyRepository;
 
     @InjectMocks
     private SameUnitConflictOfInterestStrategy strategy;
@@ -32,26 +32,26 @@ class SameUnitConflictOfInterestStrategyTest {
         return new ConflictOfInterestContext(MANIFESTATION_ID, ANALYST_ID, "RECLAMACAO", accusedPartyIds);
     }
 
-    private AcademicMember member(Long id, String unit) {
-        AcademicMember member = new AcademicMember();
-        member.setId(id);
-        member.setName("Membro " + id);
-        member.setUnit(unit);
-        return member;
+    private Party party(Long id, String unit) {
+        Party party = new Party();
+        party.setId(id);
+        party.setName("Parte " + id);
+        party.setUnit(unit);
+        return party;
     }
 
     private void givenAnalyst(String unit) {
-        when(memberRepository.findById(ANALYST_ID)).thenReturn(Optional.of(member(ANALYST_ID, unit)));
+        when(partyRepository.findById(ANALYST_ID)).thenReturn(Optional.of(party(ANALYST_ID, unit)));
     }
 
-    private void givenAccused(Long id, String unit) {
-        when(memberRepository.findById(id)).thenReturn(Optional.of(member(id, unit)));
+    private void givenParty(Long id, String unit) {
+        when(partyRepository.findById(id)).thenReturn(Optional.of(party(id, unit)));
     }
 
     @Test
     void hasConflict_deveRetornarTrue_quandoAnalistaEDenunciadoSaoDaMesmaUnidade() {
         givenAnalyst("DIMAP");
-        givenAccused(ACCUSED_ID, "DIMAP");
+        givenParty(ACCUSED_ID, "DIMAP");
 
         assertThat(strategy.hasConflict(context(List.of(ACCUSED_ID)))).isTrue();
     }
@@ -59,7 +59,7 @@ class SameUnitConflictOfInterestStrategyTest {
     @Test
     void hasConflict_deveRetornarFalse_quandoUnidadesSaoDiferentes() {
         givenAnalyst("DCA");
-        givenAccused(ACCUSED_ID, "DIMAP");
+        givenParty(ACCUSED_ID, "DIMAP");
 
         assertThat(strategy.hasConflict(context(List.of(ACCUSED_ID)))).isFalse();
     }
@@ -67,7 +67,7 @@ class SameUnitConflictOfInterestStrategyTest {
     @Test
     void hasConflict_deveIgnorarCaixaNaComparacaoDeUnidade() {
         givenAnalyst("dimap");
-        givenAccused(ACCUSED_ID, "DIMAP");
+        givenParty(ACCUSED_ID, "DIMAP");
 
         assertThat(strategy.hasConflict(context(List.of(ACCUSED_ID)))).isTrue();
     }
@@ -75,15 +75,15 @@ class SameUnitConflictOfInterestStrategyTest {
     @Test
     void hasConflict_deveRetornarTrue_quandoAlgumDosAcusadosEDaMesmaUnidade() {
         givenAnalyst("DIMAP");
-        givenAccused(2L, "DCA");
-        givenAccused(3L, "DIMAP");
+        givenParty(2L, "DCA");
+        givenParty(3L, "DIMAP");
 
         assertThat(strategy.hasConflict(context(List.of(2L, 3L)))).isTrue();
     }
 
     @Test
     void hasConflict_deveRetornarFalse_quandoAnalistaNaoEstaCadastrado() {
-        when(memberRepository.findById(ANALYST_ID)).thenReturn(Optional.empty());
+        when(partyRepository.findById(ANALYST_ID)).thenReturn(Optional.empty());
 
         assertThat(strategy.hasConflict(context(List.of(ACCUSED_ID)))).isFalse();
     }
@@ -96,9 +96,9 @@ class SameUnitConflictOfInterestStrategyTest {
     }
 
     @Test
-    void hasConflict_deveRetornarFalse_quandoMembroAcusadoNaoExiste() {
+    void hasConflict_deveRetornarFalse_quandoParteAcusadaNaoExiste() {
         givenAnalyst("DIMAP");
-        when(memberRepository.findById(ACCUSED_ID)).thenReturn(Optional.empty());
+        when(partyRepository.findById(ACCUSED_ID)).thenReturn(Optional.empty());
 
         assertThat(strategy.hasConflict(context(List.of(ACCUSED_ID)))).isFalse();
     }
