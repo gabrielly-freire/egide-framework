@@ -1,7 +1,6 @@
 package br.imd.ufrn.web;
 
 import br.imd.ufrn.exception.AcademicMemberNotFoundException;
-import br.imd.ufrn.exception.AccusationNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,14 +20,6 @@ public class InstanceExceptionHandler {
     public ProblemDetail handleAcademicMemberNotFound(AcademicMemberNotFoundException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         detail.setTitle("Membro acadêmico não encontrado");
-        return detail;
-    }
-
-    @ExceptionHandler(AccusationNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ProblemDetail handleAccusationNotFound(AccusationNotFoundException ex) {
-        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-        detail.setTitle("Denunciado não encontrado");
         return detail;
     }
 }

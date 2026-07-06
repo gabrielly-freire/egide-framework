@@ -21,4 +21,14 @@ public record ConflictOfInterestContext(
         Long analystId,
         String manifestationType,
         List<Long> accusedPartyIds
-) {}
+) {
+
+    /**
+     * Construtor de compatibilidade (sem partes acusadas): mantém válido o código que instanciava
+     * o contexto antes do campo {@code accusedPartyIds}, assumindo lista vazia. Estratégias que
+     * ainda resolvem os acusados por conta própria não são afetadas.
+     */
+    public ConflictOfInterestContext(Long manifestationId, Long analystId, String manifestationType) {
+        this(manifestationId, analystId, manifestationType, List.of());
+    }
+}
