@@ -18,6 +18,15 @@ public class RegionDesignationStrategy implements DesignationStrategy {
 
     private final AnalystRepository analystRepository;
 
+    /**
+     * Tenta primeiro um analista cuja {@link Analyst#getSpecialty()} corresponda ao
+     * {@code manifestationType()} da manifestação (mesma chave gerada por
+     * {@link br.imd.ufrn.atendimento.categorization.PublicServiceCategorizationStrategy}).
+     * Se nenhum especialista estiver cadastrado, cai para um analista da
+     * {@link Analyst#getRegion()} declarada como {@code affectedRegion()}. Retorna
+     * {@code null} (designação manual) quando nem especialidade nem região resolvem
+     * um analista, ou quando a região afetada não foi informada.
+     */
     @Override
     public Long resolve(DesignationContext context) {
         Optional<Analyst> bySpecialty = analystRepository.findFirstBySpecialty(context.manifestationType());

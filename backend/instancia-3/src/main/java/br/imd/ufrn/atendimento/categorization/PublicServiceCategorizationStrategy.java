@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class PublicServiceCategorizationStrategy implements CategorizationStrategy {
 
+    /**
+     * Retorna o próprio {@code type} da manifestação como categoria e {@code riskLevel}
+     * sempre {@code null}, já que a LAI não define níveis de risco.
+     */
     @Override
     public CategorizationResult categorize(CategorizationContext context) {
         return new CategorizationResult(context.type(), null);
