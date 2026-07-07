@@ -1,0 +1,34 @@
+:root {
+  --bg-primary: #f8fafc;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --input-bg: #f1f5f9;
+  --text-muted: #64748b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0a0e18;
+    --bg-card: #161b27;
+    --text-main: #f1f5f9;
+    --border-color: rgba(255, 255, 255, 0.06);
+    --input-bg: #0d1117;
+    --text-muted: #94a3b8;
+  }
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-main);
+  margin: 0;
+  transition: background-color 0.3s ease;
+}
+
+.app-main {
+  background-color: var(--bg-primary) !important;
+  padding: 60px 80px;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
