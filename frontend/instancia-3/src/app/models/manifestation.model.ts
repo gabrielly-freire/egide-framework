@@ -1,16 +1,18 @@
 export type ManifestationStatus = 'REGISTERED' | 'IN_REVIEW' | 'RESOLVED' | 'CLOSED';
 
 export type ManifestationType =
-  | 'RECLAMACAO'
-  | 'SUGESTAO'
-  | 'ELOGIO'
-  | 'DENUNCIA'
-  | 'SOLICITACAO';
+  | 'SAUDE'
+  | 'EDUCACAO'
+  | 'INFRAESTRUTURA'
+  | 'ASSISTENCIA_SOCIAL'
+  | 'MEIO_AMBIENTE'
+  | 'GESTAO';
 
 export interface ManifestationRequest {
   title: string;
   description: string;
   type: ManifestationType;
+  anonymous?: boolean;
   affectedRegion?: string;
 }
 
@@ -21,6 +23,10 @@ export interface ManifestationResponse {
   description: string;
   type: string;
   status: ManifestationStatus;
+  category: string | null;
+  riskLevel: string | null;
+  affectedRegion: string | null;
+  appealCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,9 +47,12 @@ export const STATUS_LABELS: Record<ManifestationStatus, string> = {
 };
 
 export const TYPE_LABELS: Record<string, string> = {
-  RECLAMACAO: 'Reclamação',
-  SUGESTAO: 'Sugestão',
-  ELOGIO: 'Elogio',
-  DENUNCIA: 'Denúncia',
-  SOLICITACAO: 'Solicitação',
+  SAUDE: 'Saúde',
+  EDUCACAO: 'Educação',
+  INFRAESTRUTURA: 'Infraestrutura',
+  ASSISTENCIA_SOCIAL: 'Assistência Social',
+  MEIO_AMBIENTE: 'Meio Ambiente',
+  GESTAO: 'Gestão',
 };
+
+export const MAX_APPEALS = 3;

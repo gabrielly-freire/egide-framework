@@ -13,77 +13,431 @@
   } @else if (error()) {
     <div class="alert alert-danger">{{ error() }}</div>
   } @else if (manifestation()) {
-    <div class="detail-grid">
-      <!-- Main info -->
-      <div class="detail-card main-card">
-        <div class="card-top">
-          <div>
-            <span class="protocol-label">Protocolo</span>
-            <div class="protocol-number">{{ manifestation()!.protocolNumber }}</div>
+    <!-- Tabs -->
+    <div class="detail-tabs">
+      <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+        <i class="bi bi-info-circle me-1"></i>Visão Geral
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'designation'" (click)="setTab('designation')">
+        <i class="bi bi-person-check me-1"></i>Designação
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'impediments'" (click)="setTab('impediments')">
+        <i class="bi bi-shield-exclamation me-1"></i>Impedimentos
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'decisions'" (click)="setTab('decisions')">
+        <i class="bi bi-journal-text me-1"></i>Decisões &amp; Pareceres
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'evaluation'" (click)="setTab('evaluation')">
+        <i class="bi bi-star me-1"></i>Avaliação
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'audit'" (click)="setTab('audit')">
+        <i class="bi bi-clock-history me-1"></i>Auditoria
+      </button>
+    </div>
+
+    <!-- Overview -->
+    @if (activeTab() === 'overview') {
+      <div class="detail-grid">
+        <div class="detail-card main-card">
+          <div class="card-top">
+            <div>
+              <span class="protocol-label">Protocolo</span>
+              <div class="protocol-number">{{ manifestation()!.protocolNumber }}</div>
+            </div>
+            <span class="badge text-white fs-6 {{ statusClass(manifestation()!.status) }} px-3 py-2">
+              {{ STATUS_LABELS[manifestation()!.status] }}
+            </span>
           </div>
-          <span class="badge text-white fs-6 {{ statusClass(manifestation()!.status) }} px-3 py-2">
-            {{ STATUS_LABELS[manifestation()!.status] }}
-          </span>
+
+          <h3 class="manifestation-title">{{ manifestation()!.title }}</h3>
+
+          <div class="meta-row">
+            <span class="meta-item">
+              <i class="bi bi-tag"></i>
+              {{ TYPE_LABELS[manifestation()!.type] ?? manifestation()!.type }}
+            </span>
+            @if (manifestation()!.affectedRegion) {
+              <span class="meta-item">
+                <i class="bi bi-geo-alt"></i>
+                {{ manifestation()!.affectedRegion }}
+              </span>
+            }
+            <span class="meta-item">
+              <i class="bi bi-calendar"></i>
+              Registrada em {{ manifestation()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+            <span class="meta-item">
+              <i class="bi bi-clock"></i>
+              Atualizada em {{ manifestation()!.updatedAt | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+            <span class="meta-item">
+              <i class="bi bi-arrow-repeat"></i>
+              Recursos: {{ manifestation()!.appealCount }}/{{ MAX_APPEALS }}
+            </span>
+          </div>
+
+          <div class="description-section">
+            <h4>Descrição</h4>
+            <p>{{ manifestation()!.description }}</p>
+          </div>
         </div>
 
-        <h3 class="manifestation-title">{{ manifestation()!.title }}</h3>
+        <!-- Actions -->
+        <div class="actions-card">
+          <h4><i class="bi bi-gear me-2"></i>Ações</h4>
 
-        <div class="meta-row">
-          <span class="meta-item">
-            <i class="bi bi-tag"></i>
-            {{ TYPE_LABELS[manifestation()!.type] ?? manifestation()!.type }}
-          </span>
-          <span class="meta-item">
-            <i class="bi bi-calendar"></i>
-            Registrada em {{ manifestation()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}
-          </span>
-          <span class="meta-item">
-            <i class="bi bi-clock"></i>
-            Atualizada em {{ manifestation()!.updatedAt | date: 'dd/MM/yyyy HH:mm' }}
-          </span>
-        </div>
+          @if (workflowError()) {
+            <div class="alert alert-danger small">{{ workflowError() }}</div>
+          }
 
-        <div class="description-section">
-          <h4>Descrição</h4>
-          <p>{{ manifestation()!.description }}</p>
+          <div class="status-section">
+            <label class="form-label fw-semibold">Fluxo (LAI)</label>
+            <div class="workflow-actions">
+              <button
+                class="btn btn-gov w-100 mb-2"
+                [disabled]="!nextStatus() || advancing()"
+                (click)="advance()"
+              >
+                @if (advancing()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                } @else {
+                  <i class="bi bi-arrow-right-circle me-2"></i>
+                }
+                @if (nextStatus()) {
+                  Avançar para {{ STATUS_LABELS[nextStatus()!] }}
+                } @else {
+                  Fluxo encerrado
+                }
+              </button>
+
+              <button
+                class="btn btn-outline-warning w-100"
+                [disabled]="!canAppeal() || appealing()"
+                (click)="appeal()"
+              >
+                @if (appealing()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                } @else {
+                  <i class="bi bi-arrow-counterclockwise me-2"></i>
+                }
+                Registrar Recurso ({{ manifestation()!.appealCount }}/{{ MAX_APPEALS }})
+              </button>
+              <div class="form-text">
+                Recurso admitido em até {{ MAX_APPEALS }} instâncias administrativas, enquanto a
+                manifestação estiver em análise ou resolvida.
+              </div>
+            </div>
+          </div>
+
+          <hr />
+
+          <button
+            class="btn btn-outline-danger w-100"
+            (click)="delete()"
+            [disabled]="deleting()"
+          >
+            @if (deleting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            } @else {
+              <i class="bi bi-trash me-2"></i>
+            }
+            Excluir Manifestação
+          </button>
         </div>
       </div>
+    }
 
-      <!-- Actions -->
-      <div class="actions-card">
-        <h4><i class="bi bi-gear me-2"></i>Ações</h4>
+    <!-- Designation -->
+    @if (activeTab() === 'designation') {
+      <div class="detail-card">
+        <h4><i class="bi bi-person-check me-2"></i>Designação do Responsável</h4>
 
-        <div class="status-section">
-          <label class="form-label fw-semibold">Alterar Status</label>
-          <div class="status-options">
-            @for (s of statuses; track s) {
-              <button
-                class="status-btn"
-                [class.active]="manifestation()!.status === s"
-                [class]="'status-btn ' + statusClass(s)"
-                (click)="updateStatus(s)"
-              >
-                {{ STATUS_LABELS[s] }}
-              </button>
-            }
+        @if (assignmentError()) {
+          <div class="alert alert-danger small">{{ assignmentError() }}</div>
+        }
+
+        @if (loadingAssignment()) {
+          <div class="spinner-border spinner-border-sm"></div>
+        } @else if (assignment()) {
+          <div class="assignment-box">
+            <div>
+              <i class="bi bi-person-fill me-2"></i>
+              <strong>{{ analystName(assignment()!.responsibleId) }}</strong>
+              <span class="text-muted small ms-2">designado em {{ assignment()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" [disabled]="assigning()" (click)="unassign()">
+              <i class="bi bi-x-circle me-1"></i>Remover designação
+            </button>
           </div>
-        </div>
+        } @else {
+          <p class="text-muted">Nenhum analista designado para esta manifestação.</p>
+        }
 
         <hr />
 
-        <button
-          class="btn btn-outline-danger w-100"
-          (click)="delete()"
-          [disabled]="deleting()"
-        >
-          @if (deleting()) {
-            <span class="spinner-border spinner-border-sm me-2"></span>
-          } @else {
-            <i class="bi bi-trash me-2"></i>
-          }
-          Excluir Manifestação
-        </button>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <button class="btn btn-gov w-100" [disabled]="assigning()" (click)="autoAssign()">
+              <i class="bi bi-magic me-2"></i>Designar automaticamente
+            </button>
+            <div class="form-text">Por especialidade do órgão e, na falta, pela região afetada.</div>
+          </div>
+
+          <div class="col-md-5">
+            <label class="form-label">Designar manualmente</label>
+            <select
+              class="form-select"
+              [ngModel]="selectedAnalystId()"
+              (ngModelChange)="selectedAnalystId.set($event)"
+            >
+              <option [ngValue]="null">Selecione um analista…</option>
+              @for (a of analysts(); track a.id) {
+                <option [ngValue]="a.id">{{ a.name }} ({{ a.specialty }})</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button
+              class="btn btn-outline-primary w-100"
+              [disabled]="!selectedAnalystId() || assigning()"
+              (click)="manualAssign()"
+            >
+              <i class="bi bi-check2 me-2"></i>Designar
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    }
+
+    <!-- Legal impediments -->
+    @if (activeTab() === 'impediments') {
+      <div class="detail-card">
+        <h4><i class="bi bi-shield-exclamation me-2"></i>Impedimentos Legais</h4>
+        <p class="text-muted small">
+          Impedimento legal (LAI): analista citado na manifestação ou com parentesco com envolvidos
+          fica bloqueado para designação/conflito de interesse.
+        </p>
+
+        @if (impedimentError()) {
+          <div class="alert alert-danger small">{{ impedimentError() }}</div>
+        }
+
+        @if (loadingImpediments()) {
+          <div class="spinner-border spinner-border-sm"></div>
+        } @else if (impediments().length === 0) {
+          <p class="text-muted">Nenhum impedimento registrado.</p>
+        } @else {
+          <ul class="list-group mb-3">
+            @for (i of impediments(); track i.id) {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{{ analystName(i.analystId) }}</strong>
+                  <span class="badge bg-secondary ms-2">{{ REASON_LABELS[i.reason] }}</span>
+                  <span class="text-muted small ms-2">{{ i.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" (click)="removeImpediment(i.id)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        <hr />
+
+        <form [formGroup]="impedimentForm" (ngSubmit)="registerImpediment()" novalidate>
+          <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+              <label class="form-label">Analista</label>
+              <select class="form-select" formControlName="analystId">
+                <option value="">Selecione…</option>
+                @for (a of analysts(); track a.id) {
+                  <option [value]="a.id">{{ a.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Motivo</label>
+              <select class="form-select" formControlName="reason">
+                <option value="">Selecione…</option>
+                <option value="CITATION">Citação</option>
+                <option value="KINSHIP">Parentesco</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-gov w-100" [disabled]="savingImpediment()">
+                @if (savingImpediment()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Registrar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- Decisions & Opinions -->
+    @if (activeTab() === 'decisions') {
+      <div class="detail-card">
+        <h4><i class="bi bi-journal-text me-2"></i>Decisões &amp; Pareceres</h4>
+
+        @if (decisionError()) {
+          <div class="alert alert-danger small">{{ decisionError() }}</div>
+        }
+
+        @if (loadingDecisions()) {
+          <div class="spinner-border spinner-border-sm"></div>
+        } @else if (decisions().length === 0) {
+          <p class="text-muted">Nenhuma decisão ou parecer registrado.</p>
+        } @else {
+          <div class="d-flex flex-column gap-2 mb-3">
+            @for (d of decisions(); track d.id) {
+              <div class="record-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <span class="badge bg-secondary">{{ DECISION_TYPE_LABELS[d.type] }}</span>
+                    <span class="text-muted small ms-2">
+                      {{ analystName(d.authorId) }} · {{ d.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                    </span>
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger" (click)="removeDecision(d.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+                <p class="mb-0 mt-2">{{ d.content }}</p>
+              </div>
+            }
+          </div>
+        }
+
+        <hr />
+
+        <form [formGroup]="decisionForm" (ngSubmit)="createDecision()" novalidate>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Tipo</label>
+              <select class="form-select" formControlName="type">
+                <option value="">Selecione…</option>
+                <option value="DECISION">Decisão</option>
+                <option value="OPINION">Parecer</option>
+              </select>
+            </div>
+            <div class="col-md-9">
+              <label class="form-label">Conteúdo</label>
+              <textarea class="form-control" formControlName="content" rows="3"></textarea>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-gov mt-3" [disabled]="savingDecision()">
+            @if (savingDecision()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Registrar
+          </button>
+        </form>
+      </div>
+    }
+
+    <!-- Evaluation -->
+    @if (activeTab() === 'evaluation') {
+      <div class="detail-card">
+        <h4><i class="bi bi-star me-2"></i>Avaliação do Atendimento</h4>
+
+        @if (evaluationError()) {
+          <div class="alert alert-danger small">{{ evaluationError() }}</div>
+        }
+
+        @if (loadingEvaluation()) {
+          <div class="spinner-border spinner-border-sm"></div>
+        } @else if (evaluation()) {
+          <div class="evaluation-box">
+            <div class="stars">
+              @for (n of ratings; track n) {
+                <i class="bi" [class.bi-star-fill]="n <= evaluation()!.rating" [class.bi-star]="n > evaluation()!.rating"></i>
+              }
+            </div>
+            @if (evaluation()!.comment) {
+              <p class="mt-2 mb-0">{{ evaluation()!.comment }}</p>
+            }
+          </div>
+        } @else {
+          <form [formGroup]="evaluationForm" (ngSubmit)="createEvaluation()" novalidate>
+            <div class="mb-3">
+              <label class="form-label">Nota</label>
+              <select class="form-select" formControlName="rating" style="max-width: 120px">
+                @for (n of ratings; track n) {
+                  <option [value]="n">{{ n }}</option>
+                }
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Comentário</label>
+              <textarea class="form-control" formControlName="comment" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-gov" [disabled]="savingEvaluation()">
+              @if (savingEvaluation()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              Enviar avaliação
+            </button>
+          </form>
+        }
+      </div>
+    }
+
+    <!-- Audit -->
+    @if (activeTab() === 'audit') {
+      <div class="detail-card">
+        <h4><i class="bi bi-clock-history me-2"></i>Histórico / Auditoria</h4>
+
+        @if (auditError()) {
+          <div class="alert alert-danger small">{{ auditError() }}</div>
+        }
+
+        @if (loadingAudit()) {
+          <div class="spinner-border spinner-border-sm"></div>
+        } @else if (auditEntries().length === 0) {
+          <p class="text-muted">Nenhum evento registrado.</p>
+        } @else {
+          <ul class="timeline mb-3">
+            @for (e of auditEntries(); track e.id) {
+              <li>
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <strong>{{ e.action }}</strong>
+                  <span class="text-muted small ms-2">
+                    {{ analystName(e.actorId) }} · {{ e.occurredAt | date: 'dd/MM/yyyy HH:mm' }}
+                  </span>
+                  @if (e.description) {
+                    <p class="mb-0">{{ e.description }}</p>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+
+        <hr />
+
+        <form [formGroup]="auditForm" (ngSubmit)="registerAuditEntry()" novalidate>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Ação</label>
+              <input type="text" class="form-control" formControlName="action" placeholder="Ex.: Encaminhado ao órgão" />
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Descrição</label>
+              <input type="text" class="form-control" formControlName="description" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-gov mt-3" [disabled]="savingAudit()">
+            @if (savingAudit()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Registrar evento
+          </button>
+        </form>
+      </div>
+    }
   }
 </div>

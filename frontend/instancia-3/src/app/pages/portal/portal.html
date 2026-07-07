@@ -66,11 +66,12 @@
               <label class="form-label">Tipo de Manifestação <span class="text-danger">*</span></label>
               <div class="type-grid">
                 @for (opt of [
-                  { value: 'RECLAMACAO', icon: 'bi-exclamation-circle', label: 'Reclamação' },
-                  { value: 'SUGESTAO', icon: 'bi-lightbulb', label: 'Sugestão' },
-                  { value: 'ELOGIO', icon: 'bi-hand-thumbs-up', label: 'Elogio' },
-                  { value: 'DENUNCIA', icon: 'bi-shield-exclamation', label: 'Denúncia' },
-                  { value: 'SOLICITACAO', icon: 'bi-clipboard-check', label: 'Solicitação' }
+                  { value: 'SAUDE', icon: 'bi-heart-pulse', label: 'Saúde' },
+                  { value: 'EDUCACAO', icon: 'bi-book', label: 'Educação' },
+                  { value: 'INFRAESTRUTURA', icon: 'bi-cone-striped', label: 'Infraestrutura' },
+                  { value: 'ASSISTENCIA_SOCIAL', icon: 'bi-people', label: 'Assistência Social' },
+                  { value: 'MEIO_AMBIENTE', icon: 'bi-tree', label: 'Meio Ambiente' },
+                  { value: 'GESTAO', icon: 'bi-briefcase', label: 'Gestão' }
                 ]; track opt.value) {
                   <label class="type-option" [class.selected]="submitForm.controls.type.value === opt.value">
                     <input type="radio" formControlName="type" [value]="opt.value" hidden />
