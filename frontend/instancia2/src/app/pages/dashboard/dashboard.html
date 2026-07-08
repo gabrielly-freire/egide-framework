@@ -4,30 +4,27 @@
       <span class="subtitle">PAINEL DE GESTÃO</span>
       <h1 class="title">Visão Geral</h1>
     </div>
-    <button class="btn-export-gov" (click)="downloadGovernancePdf()">
-      <i class="fas fa-file-pdf"></i> EXPORTAR RELATÓRIO
-    </button>
   </div>
 
   <div class="stats-grid">
     <div class="stat-card blue">
       <span class="stat-label">Total de Manifestações</span>
-      <h2 class="stat-value">{{ status().total }}</h2>
+      <h2 class="stat-value">{{ summary().totalManifestations }}</h2>
     </div>
 
     <div class="stat-card yellow">
-      <span class="stat-label">Pendentes</span>
-      <h2 class="stat-value">{{ status().pendentes }}</h2>
+      <span class="stat-label">Registradas</span>
+      <h2 class="stat-value">{{ count('REGISTERED') }}</h2>
     </div>
 
     <div class="stat-card green">
-      <span class="stat-label">Analisadas</span>
-      <h2 class="stat-value">{{ status().analisados }}</h2>
+      <span class="stat-label">Em análise</span>
+      <h2 class="stat-value">{{ count('IN_REVIEW') }}</h2>
     </div>
 
     <div class="stat-card red">
-      <span class="stat-label">Rejeitadas</span>
-      <h2 class="stat-value">{{ status().rejeitados }}</h2>
+      <span class="stat-label">Resolvidas</span>
+      <h2 class="stat-value">{{ count('RESOLVED') }}</h2>
     </div>
   </div>
 
@@ -35,49 +32,62 @@
     <div class="chart-card">
       <h3 class="card-title">Distribuição por Status</h3>
       <div class="simple-chart">
-        <div class="chart-row">
-          <span class="label">Pendentes</span>
+        <div class="chart-row" *ngFor="let entry of statusEntries()">
+          <span class="label">{{ entry[0] }}</span>
           <div class="bar-container">
-            <div class="bar yellow-bar" [style.width.%]="(status().pendentes / status().total) * 100 || 0"></div>
+            <div class="bar green-bar"
+                 [style.width.%]="(entry[1] / summary().totalManifestations) * 100 || 0"></div>
           </div>
-          <span class="percentage">{{ status().pendentes }}</span>
+          <span class="percentage">{{ entry[1] }}</span>
         </div>
+        <div class="chart-row" *ngIf="statusEntries().length === 0">
+          <span class="label">Sem dados</span>
+        </div>
+      </div>
+    </div>
 
-        <div class="chart-row">
-          <span class="label">Resolvidas</span>
+    <div class="chart-card">
+      <h3 class="card-title">Distribuição por Tipo</h3>
+      <div class="simple-chart">
+        <div class="chart-row" *ngFor="let entry of typeEntries()">
+          <span class="label">{{ entry[0] }}</span>
           <div class="bar-container">
-            <div class="bar green-bar" [style.width.%]="(status().analisados / status().total) * 100 || 0"></div>
+            <div class="bar yellow-bar"
+                 [style.width.%]="(entry[1] / summary().totalManifestations) * 100 || 0"></div>
           </div>
-          <span class="percentage">{{ status().analisados }}</span>
+          <span class="percentage">{{ entry[1] }}</span>
         </div>
-
-        <div class="chart-row">
-          <span class="label">Rejeitadas</span>
-          <div class="bar-container">
-            <div class="bar red-bar" [style.width.%]="(status().rejeitados / status().total) * 100 || 0"></div>
-          </div>
-          <span class="percentage">{{ status().rejeitados }}</span>
+        <div class="chart-row" *ngIf="typeEntries().length === 0">
+          <span class="label">Sem dados</span>
         </div>
+      </div>
     </div>
   </div>
 
-  <div class="stat-card">
-    <div class="stat-icon" style="background: rgba(165, 126, 255, 0.1); color: #a57eff;">
-        <i class="fas fa-bolt"></i>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-info">
+        <h3>Avaliações</h3>
+        <p class="stat-value">{{ summary().totalEvaluations }}</p>
+      </div>
     </div>
-    <div class="stat-info">
-        <h3>Média de Agilidade</h3>
-        <p class="stat-value">{{ status().mediaAgilidade | number:'1.1-1' }} / 5.0</p>
+    <div class="stat-card">
+      <div class="stat-info">
+        <h3>Nota média</h3>
+        <p class="stat-value">{{ (summary().averageRating ?? 0) | number:'1.1-1' }} / 5.0</p>
+      </div>
     </div>
-</div>
-
-<div class="stat-card">
-    <div class="stat-icon" style="background: rgba(76, 175, 80, 0.1); color: #4caf50;">
-        <i class="fas fa-check-circle"></i>
+    <div class="stat-card">
+      <div class="stat-info">
+        <h3>Decisões</h3>
+        <p class="stat-value">{{ summary().totalDecisions }}</p>
+      </div>
     </div>
-    <div class="stat-info">
-        <h3>Índice de Solução</h3>
-        <p class="stat-value">{{ status().mediaResolucao | number:'1.1-1' }} / 5.0</p>
+    <div class="stat-card">
+      <div class="stat-info">
+        <h3>Pareceres</h3>
+        <p class="stat-value">{{ summary().totalOpinions }}</p>
+      </div>
     </div>
-</div>
+  </div>
 </div>

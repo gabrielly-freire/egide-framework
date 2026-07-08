@@ -33,29 +33,22 @@
           <th>PROTOCOLO / TÍTULO</th>
           <th>STATUS</th>
           <th>DATA DE ENVIO</th>
-          <th>AÇÕES</th>
+          <th>TIPO</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let report of reports()">
           <td>
-            <span class="report-protocol">#EG-{{ report.id }}-2026</span>
+            <span class="report-protocol">{{ report.protocolNumber }}</span>
             <div class="report-title">{{ report.title }}</div>
           </td>
           <td>
             <span class="status-badge" [ngClass]="getStatusClass(report.status)">
-              {{ report.status || 'PENDENTE' }}
+              {{ report.status }}
             </span>
           </td>
-          <td>{{report.createdAt}}</td>
-          <td>
-            <button class="btn-view" [routerLink]="['/manifestacoes', report.id, 'parecer-preliminar']">
-                <mat-icon>visibility</mat-icon>
-            </button>
-            <button class="btn-export" (click)="downloadPdf(report.id!)" title="Exportar PDF">
-                <mat-icon>picture_as_pdf</mat-icon>
-            </button>
-          </td>
+          <td>{{ report.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ report.type }}</td>
         </tr>
         <tr *ngIf="reports().length === 0">
           <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">

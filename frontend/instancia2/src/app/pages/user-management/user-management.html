@@ -2,10 +2,10 @@
   <div class="page-header">
     <div>
       <span class="subtitle">Painel Administrativo</span>
-      <h1 class="title">Gerenciamento de Usuarios</h1>
+      <h1 class="title">Gerenciamento de Usuários</h1>
     </div>
     <button class="btn-primary" type="button" (click)="openCreateForm()">
-      + NOVO USUARIO
+      + NOVO USUÁRIO
     </button>
   </div>
 
@@ -44,18 +44,6 @@
         </div>
 
         <div class="form-group">
-          <label for="departmentId">Departamento</label>
-          <select id="departmentId" class="form-control" formControlName="departmentId">
-            <option [value]="0">
-              {{ loadingDepartments() ? 'Carregando departamentos...' : 'Selecione um departamento' }}
-            </option>
-            @for (department of departments(); track department.id) {
-              <option [value]="department.id">{{ department.name }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="form-group">
           <label for="password">Senha</label>
           <input
             id="password"
@@ -70,7 +58,7 @@
       <div class="button-group">
         <button type="button" class="btn btn-cancel" (click)="closeForm()">Cancelar</button>
         <button type="submit" class="btn btn-submit" [disabled]="saving() || userForm.invalid">
-          {{ saving() ? 'SALVANDO...' : 'SALVAR USUARIO' }}
+          {{ saving() ? 'SALVANDO...' : 'SALVAR USUÁRIO' }}
         </button>
       </div>
     </form>
@@ -78,8 +66,8 @@
 
   <div class="table-container">
     <div class="table-header">
-      <h2>Usuarios cadastrados</h2>
-      <span class="table-count">Total: {{ totalElements() }}</span>
+      <h2>Usuários cadastrados</h2>
+      <span class="table-count">Total: {{ users().length }}</span>
     </div>
 
     <table class="users-table">
@@ -88,14 +76,12 @@
           <th>Nome / Email</th>
           <th>Login</th>
           <th>Perfil</th>
-          <th>Departamento</th>
-          <th>Acoes</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="5" class="empty-row">Carregando usuarios...</td>
+            <td colspan="3" class="empty-row">Carregando usuários...</td>
           </tr>
         } @else {
           @for (user of users(); track user.id ?? user.username) {
@@ -108,40 +94,14 @@
               <td>
                 <span class="badge-role">{{ roleLabel(user.role) }}</span>
               </td>
-              <td>{{ departmentName(user.departmentId) }}</td>
-              <td>
-                <div class="action-group">
-                  <button type="button" class="btn-action edit" (click)="openEditForm(user)">
-                    Editar
-                  </button>
-                  <button type="button" class="btn-action remove" (click)="deleteUser(user)">
-                    Excluir
-                  </button>
-                </div>
-              </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="empty-row">Nenhum usuario encontrado.</td>
+              <td colspan="3" class="empty-row">Nenhum usuário encontrado.</td>
             </tr>
           }
         }
       </tbody>
     </table>
-  </div>
-
-  <div class="pagination">
-    <button type="button" class="btn-page" (click)="previousPage()" [disabled]="page() === 0 || loading()">
-      Anterior
-    </button>
-    <span>Pagina {{ page() + 1 }} de {{ totalPages() || 1 }}</span>
-    <button
-      type="button"
-      class="btn-page"
-      (click)="nextPage()"
-      [disabled]="page() + 1 >= totalPages() || loading()"
-    >
-      Proxima
-    </button>
   </div>
 </div>

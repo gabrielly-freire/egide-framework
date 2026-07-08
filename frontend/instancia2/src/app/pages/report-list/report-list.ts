@@ -1,9 +1,8 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ReportService } from '../../services/report/report.service';
-import { ReportDTO } from '../../models/report.model';
 import { MatIconModule } from '@angular/material/icon';
+import { Manifestation, ManifestationService } from '../../services/manifestation/manifestation.service';
 
 @Component({
   selector: 'app-report-list',
@@ -13,50 +12,31 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './report-list.css'
 })
 export class ReportList implements OnInit {
-  reports = signal<ReportDTO[]>([]);
+  reports = signal<Manifestation[]>([]);
 
-  reportsInAnalysis = computed(() => 
-    this.reports().filter(r => {
+  reportsInAnalysis = computed(
+    () => this.reports().filter(r => r.status?.toUpperCase() === 'IN_REVIEW').length
+  );
+
+  reportsCompleted = computed(
+    () => this.reports().filter(r => {
       const s = r.status?.toUpperCase();
-      return s === 'PENDING' || s === 'PENDENTE';
+      return s === 'RESOLVED' || s === 'CLOSED';
     }).length
   );
 
-  reportsCompleted = computed(() => 
-    this.reports().filter(r => {
-      const s = r.status?.toUpperCase();
-      return s === 'ANALYZED' || s === 'ANALISADO';
-    }).length
-  );
-
-  constructor(private reportService: ReportService) {}
+  constructor(private readonly manifestationService: ManifestationService) {}
 
   ngOnInit(): void {
-    this.reportService.list().subscribe({
-      next: (data: ReportDTO[]) => {
-        this.reports.set(data);
-      },
-      error: (err: any) => {
-        console.error('Erro na listagem:', err);
-      }
+    this.manifestationService.list(0, 50).subscribe({
+      next: data => this.reports.set(data),
+      error: err => console.error('Erro na listagem:', err)
     });
   }
 
   getStatusClass(status: string | undefined): string {
     const s = status?.toUpperCase();
-    if (s === 'PENDING' || s === 'PENDENTE') return 'status-analysis';
-    if (s === 'ANALYZED' || s === 'ANALISADO') return 'status-completed';
+    if (s === 'RESOLVED' || s === 'CLOSED') return 'status-completed';
     return 'status-analysis';
   }
-
-  downloadPdf(reportId: number): void {
-  this.reportService.exportarPdf(reportId).subscribe(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `relatorio-${reportId}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
 }
