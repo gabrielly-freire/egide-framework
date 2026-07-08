@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 /**
- * Triagem automática da Instância 2 (Ouvidoria Universitária) por heurística de palavras-chave.
+ * Triagem automática da Instância 2 (Ouvidoria Universitária) por correspondência de palavras-chave.
  *
  * <p>Concatena título e descrição, normaliza (minúsculas, sem acento) e conta, para cada
  * {@link UniversityCategory}, quantas de suas palavras-chave aparecem. Escolhe a categoria com

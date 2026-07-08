@@ -45,4 +45,10 @@ public class Manifestation extends BaseEntity {
     // Prazo (SLA) da fase atual do workflow. Carimbado pelo Core a partir do WorkflowTemplate
     // (now + Duration); null quando a fase não define prazo.
     private LocalDateTime deadlineAt;
+
+    @Column(length = 100)
+    private String affectedRegion;
+
+    @Column(nullable = false)
+    private Integer appealCount = 0;
 }

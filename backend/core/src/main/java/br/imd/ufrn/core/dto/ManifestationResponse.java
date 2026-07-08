@@ -13,6 +13,8 @@ public record ManifestationResponse(
         String category,
         String riskLevel,
         LocalDateTime deadlineAt,
+        String affectedRegion,
+        Integer appealCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

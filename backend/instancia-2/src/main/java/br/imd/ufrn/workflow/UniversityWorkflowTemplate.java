@@ -1,5 +1,6 @@
 package br.imd.ufrn.workflow;
 
+import br.imd.ufrn.core.domain.Manifestation;
 import br.imd.ufrn.core.domain.ManifestationStatus;
 import br.imd.ufrn.core.workflow.WorkflowTemplate;
 import java.time.Duration;
@@ -51,8 +52,8 @@ public class UniversityWorkflowTemplate extends WorkflowTemplate {
     }
 
     @Override
-    protected boolean isAppealAllowed(ManifestationStatus status) {
-        return status == ManifestationStatus.RESOLVED;
+    protected boolean isAppealAllowed(Manifestation manifestation) {
+        return manifestation.getStatus() == ManifestationStatus.RESOLVED;
     }
 
     @Override

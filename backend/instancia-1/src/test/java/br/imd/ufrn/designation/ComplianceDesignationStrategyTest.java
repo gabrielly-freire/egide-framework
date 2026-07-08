@@ -30,7 +30,7 @@ class ComplianceDesignationStrategyTest {
     @InjectMocks
     private ComplianceDesignationStrategy strategy;
 
-    private final DesignationContext context = new DesignationContext(100L, "DENUNCIA");
+    private final DesignationContext context = new DesignationContext(100L, "DENUNCIA", null);
 
     private AppUser listener(Long id) {
         AppUser u = new AppUser();

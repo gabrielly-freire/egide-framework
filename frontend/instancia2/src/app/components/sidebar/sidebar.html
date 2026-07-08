@@ -1,0 +1,56 @@
+<div class="sidebar" style="background-color: var(--bg-card); border-right: 1px solid var(--border-color); height: 100vh; width: 260px; display: flex; flex-direction: column;">
+
+
+  <nav style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+
+    <a *ngIf="hasAnyRole(['LISTENER','GENERAL_LISTENER','MANAGER','ADMIN'])"
+       routerLink="/dashboard"
+       routerLinkActive="active-link"
+       class="nav-item">
+      <i class="pi pi-chart-bar"></i>
+      <span>Dashboard</span>
+    </a>
+
+    <a *ngIf="hasAnyRole(['REMONSTRANT','ADMIN'])"
+       routerLink="/cadastrar-manifestacao"
+       routerLinkActive="active-link"
+       class="nav-item">
+      <i class="pi pi-plus-circle"></i>
+      <span>Nova Manifestação</span>
+    </a>
+
+    <a *ngIf="hasAnyRole(['MANAGER','ADMIN'])"
+       routerLink="/manifestacoes"
+       routerLinkActive="active-link"
+       class="nav-item">
+      <i class="pi pi-list"></i>
+      <span>Manifestações</span>
+    </a>
+
+    <a *ngIf="hasAnyRole(['ADMIN'])"
+       routerLink="/conflito"
+       routerLinkActive="active-link"
+       class="nav-item">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>Conflito de Interesse</span>
+    </a>
+
+    <a *ngIf="hasAnyRole(['ADMIN'])"
+       routerLink="/usuarios"
+       routerLinkActive="active-link"
+       class="nav-item">
+      <i class="pi pi-users"></i>
+      <span>Usuários</span>
+    </a>
+
+    <button
+      type="button"
+      class="nav-item logout-item"
+      style="width: 100%; border: none; background: transparent; cursor: pointer;"
+      (click)="logout()"
+    >
+      <i class="pi pi-sign-out"></i>
+      <span>Logout</span>
+    </button>
+  </nav>
+</div>

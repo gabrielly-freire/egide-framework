@@ -9,6 +9,7 @@ import br.imd.ufrn.core.exception.DecisionRecordNotFoundException;
 import br.imd.ufrn.core.exception.DuplicateProtocolException;
 import br.imd.ufrn.core.exception.EvaluationAlreadyExistsException;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
+import br.imd.ufrn.core.exception.PartyNotFoundException;
 import br.imd.ufrn.core.exception.ResponsibleAssignmentNotFoundException;
 import br.imd.ufrn.core.exception.ServiceEvaluationNotFoundException;
 import java.util.Map;
@@ -29,6 +30,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleManifestationNotFound(ManifestationNotFoundException ex) {
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         detail.setTitle("Manifestação não encontrada");
+        return detail;
+    }
+
+    @ExceptionHandler(PartyNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handlePartyNotFound(PartyNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        detail.setTitle("Parte não encontrada");
         return detail;
     }
 

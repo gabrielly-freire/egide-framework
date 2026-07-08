@@ -2,6 +2,20 @@
 
 Framework modular para sistemas de ouvidoria, composto por pontos fixos (comportamentos obrigatórios em todas as instâncias) e pontos variáveis (comportamentos configuráveis por instância).
 
+## Estrutura do repositório
+
+| Módulo                            | Caminho                                                        | Descrição |
+|-----------------------------------|----------------------------------------------------------------|---|
+| Core                              | [`backend/core`](backend/core)                                 | Biblioteca reutilizável com os pontos fixos e os contratos/defaults dos pontos variáveis |
+| Instância 1 — Backend             | [`backend/instancia-1`](backend/instancia-1)                   | Sistema de Compliance Corporativo, construído sobre o Core |
+| Instância 1 — Backend (legado)    | [`backend/instancia-1-original`](backend/instancia-1-original) | Monolito de referência, anterior à extração do framework |
+| Instância 1 — Frontend            | [`frontend/instancia1`](frontend/instancia1)                   | Aplicação Angular (Egide) |
+| Instância 1 — Microsserviço de IA | [`egide-ia-ms`](egide-ia-ms)                                   | FastAPI + LangGraph, anonimização/pseudonimização inteligente (LGPD) |
+| Instância 2 — Backend             | [`backend/instancia-2`](backend/instancia-2)                   | Ouvidoria Universitária, construído sobre o Core |
+| Instância 2 — Frontend            | [`frontend/instancia-2`](frontend/instancia-2)                 | Aplicação Angular |
+| Instância 3 — Backend             | [`backend/instancia-3`](backend/instancia-3)                   | Sistema de Atendimento Público (LAI), construído sobre o Core |
+| Instância 3 — Frontend            | [`frontend/instancia-3`](frontend/instancia-3)                 | Aplicação Angular |
+
 ## Core
 
 [Backend](backend/core)
@@ -33,7 +47,7 @@ Configuráveis por instância, adaptando o framework ao contexto de cada organiz
 
 Usado por empresas privadas para receber denúncias internas.
 
-[Frontend](frontend) | [Backend](backend/instancia-1-original/backend)
+[Backend](backend/instancia-1) | [Frontend](frontend/instancia1) | [Backend legado](backend/instancia-1-original) | [Microsserviço de IA](egide-ia-ms)
 
 | Ponto Variável         | Configuração                                                                                        |
 |------------------------|-----------------------------------------------------------------------------------------------------|
@@ -47,7 +61,7 @@ Usado por empresas privadas para receber denúncias internas.
 
 Usado por universidades para receber manifestações de alunos, professores e servidores.
 
-[Frontend](frontend/instancia2) | [Backend](backend/instancia-2)
+[Backend](backend/instancia-2) | [Frontend](frontend/instancia2)
 
 | Ponto Variável         | Configuração                                                                                   |
 |------------------------|------------------------------------------------------------------------------------------------|
@@ -61,7 +75,7 @@ Usado por universidades para receber manifestações de alunos, professores e se
 
 Usado por órgãos públicos para manifestações de cidadãos (ex.: Ouvidoria Geral do SUS).
 
-[Frontend](backend/instancia-3/frontend) | [Backend](backend/instancia-3/backend)
+[Backend](backend/instancia-3) | [Frontend](frontend/instancia-3)
 
 | Ponto Variável         | Configuração                                                                                                           |
 |------------------------|------------------------------------------------------------------------------------------------------------------------|

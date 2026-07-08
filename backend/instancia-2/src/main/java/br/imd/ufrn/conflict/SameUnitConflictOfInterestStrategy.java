@@ -2,25 +2,25 @@ package br.imd.ufrn.conflict;
 
 import br.imd.ufrn.core.conflict.ConflictOfInterestContext;
 import br.imd.ufrn.core.conflict.ConflictOfInterestStrategy;
-import br.imd.ufrn.domain.AcademicMember;
-import br.imd.ufrn.domain.ManifestationAccusation;
-import br.imd.ufrn.persistence.AcademicMemberRepository;
-import br.imd.ufrn.persistence.ManifestationAccusationRepository;
+import br.imd.ufrn.core.domain.Party;
+import br.imd.ufrn.core.persistence.PartyRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
  * Conflito de interesse da Instância 2 (Ouvidoria Universitária): o analista não pode pertencer à
- * mesma unidade acadêmica (centro ou departamento) do denunciado.
+ * mesma unidade acadêmica (centro ou departamento) de nenhuma das partes acusadas.
  *
- * <p>Resolve a unidade do analista (pelo {@code analystId} do contexto) e a do denunciado (via
- * {@link ManifestationAccusation} da manifestação) e compara, ignorando caixa. Há conflito quando
- * ambas as unidades são conhecidas e iguais.
+ * <p>Toda a infraestrutura vem do Core: as partes acusadas chegam prontas no contexto
+ * ({@link ConflictOfInterestContext#accusedPartyIds()}) e o cadastro de pessoas/unidades é o
+ * registro genérico {@link Party} do Core ({@code /v1/parties}). A instância <em>não implementa</em>
+ * entidade, repositório, serviço ou controller próprios — apenas <b>consome</b> a persistência do
+ * Core e aplica a sua regra (comparar unidades).
  *
- * <p>Na ausência de dados — analista não cadastrado, manifestação sem denunciado registrado ou
- * denunciado inexistente — retorna {@code false}: sem informação não é possível <em>afirmar</em>
- * o impedimento, então a designação não é bloqueada.
+ * <p>Há conflito quando o analista está cadastrado e sua unidade coincide (ignorando caixa) com a
+ * de alguma parte acusada. Sem dados suficientes retorna {@code false}: não é possível
+ * <em>afirmar</em> o impedimento.
  *
  * <p>Registrada como {@link Component}; desliga o default do Core
  * ({@code NoConflictOfInterestStrategy}) via {@code @ConditionalOnMissingBean}.
@@ -29,23 +29,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SameUnitConflictOfInterestStrategy implements ConflictOfInterestStrategy {
 
-    private final AcademicMemberRepository memberRepository;
-    private final ManifestationAccusationRepository accusationRepository;
+    private final PartyRepository partyRepository;
 
     @Override
     public boolean hasConflict(ConflictOfInterestContext context) {
-        Optional<AcademicMember> analyst = memberRepository.findById(context.analystId());
+        Optional<Party> analyst = partyRepository.findById(context.analystId());
         if (analyst.isEmpty()) {
             return false;
         }
+        String analystUnit = analyst.get().getUnit();
 
-        Optional<AcademicMember> accused = accusationRepository
-                .findByManifestationId(context.manifestationId())
-                .flatMap(accusation -> memberRepository.findById(accusation.getAccusedMemberId()));
-        if (accused.isEmpty()) {
-            return false;
-        }
-
-        return analyst.get().getUnit().equalsIgnoreCase(accused.get().getUnit());
+        return context.accusedPartyIds().stream()
+                .map(partyRepository::findById)
+                .flatMap(Optional::stream)
+                .anyMatch(accused -> analystUnit.equalsIgnoreCase(accused.getUnit()));
     }
 }

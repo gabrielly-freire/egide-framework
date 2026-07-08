@@ -16,5 +16,14 @@ public record ManifestationRequest(
         @Size(max = 100, message = "O tipo deve ter no máximo 100 caracteres")
         String type,
 
-        boolean anonymous
-) {}
+        Boolean anonymous,
+
+        @Size(max = 100, message = "A região deve ter no máximo 100 caracteres")
+        String affectedRegion
+) {
+    public ManifestationRequest {
+        if (anonymous == null) {
+            anonymous = false;
+        }
+    }
+}

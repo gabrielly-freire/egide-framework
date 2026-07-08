@@ -1,0 +1,40 @@
+<div class="page-header">
+  <span class="subtitle">Painel do Reclamante</span>
+  <h1 class="title">Nova Manifestação</h1>
+</div>
+
+<form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="card-form">
+  <div class="form-group">
+    <label>Título do Relato</label>
+    <input formControlName="title" type="text" class="form-control" placeholder="Ex: Irregularidade no setor X">
+  </div>
+
+  <div class="form-group">
+    <label>Descrição Detalhada</label>
+    <textarea formControlName="description" rows="5" class="form-control" placeholder="Descreva o ocorrido com o máximo de detalhes possível..."></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Tipo</label>
+    <select formControlName="type" class="form-control">
+      <option value="RECLAMACAO">Reclamação</option>
+      <option value="DENUNCIA">Denúncia</option>
+      <option value="SUGESTAO">Sugestão</option>
+      <option value="ELOGIO">Elogio</option>
+      <option value="SOLICITACAO">Solicitação</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label class="checkbox-label">
+      <input type="checkbox" formControlName="anonymous"> Enviar como anônima
+    </label>
+  </div>
+
+  <div class="button-group">
+    <button type="button" class="btn btn-cancel" (click)="reportForm.reset()">CANCELAR</button>
+    <button type="submit" [disabled]="reportForm.invalid || loading" class="btn btn-submit">
+      {{ loading ? 'PROCESSANDO...' : 'ENVIAR MANIFESTAÇÃO' }}
+    </button>
+  </div>
+</form>

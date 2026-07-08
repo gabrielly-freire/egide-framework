@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class AccusationServiceImpl implements AccusationService {
 
-    private final ManifestationAccusationRepository accusationRepository;
+    private final ComplianceAccusationRepository accusationRepository;
     private final ManifestationRepository manifestationRepository;
     private final AppUserRepository userRepository;
 
