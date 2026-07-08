@@ -36,6 +36,10 @@ public class SecurityConfig {
                         .requestMatchers("/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/manifestations").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/manifestations/protocol/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/evaluations").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/evaluations/manifestation/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/workflow/*/appeal").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/manifestations").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
