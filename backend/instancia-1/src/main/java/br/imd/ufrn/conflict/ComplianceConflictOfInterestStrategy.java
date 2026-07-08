@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ComplianceConflictOfInterestStrategy implements ConflictOfInterestStrategy {
 
-    private final ManifestationAccusationRepository accusationRepository;
+    private final ComplianceAccusationRepository accusationRepository;
     private final AppUserRepository userRepository;
 
     @Override
@@ -68,6 +68,6 @@ public class ComplianceConflictOfInterestStrategy implements ConflictOfInterestS
     }
 
     private boolean outranks(AppUser accused, AppUser analyst) {
-        return accused.getRole().ordinal() > analyst.getRole().ordinal();
+        return accused.getRole().getLevel() > analyst.getRole().getLevel();
     }
 }

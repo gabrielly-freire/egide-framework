@@ -1,176 +1,203 @@
 <div class="container">
   <div class="header">
     <div>
-      <span class="subtitle">PAINEL DO OUVIDOR</span>
-      <h1 class="title">Parecer Preliminar</h1>
+      <div class="subtitle">MANIFESTAÇÃO</div>
+      <h1 class="title">{{ manifestation()?.protocolNumber ?? ('#' + manifestationId) }}</h1>
     </div>
-    <a class="btn-secondary" routerLink="/ouvidor/casos">Voltar aos meus casos</a>
+    <a routerLink="/manifestacoes" class="btn-secondary">Voltar à lista</a>
   </div>
 
-  <div *ngIf="loading()" class="loading">Carregando o caso...</div>
+  @if (serverError()) {
+    <div class="error">{{ serverError() }}</div>
+  }
 
-  <div *ngIf="report() as r" class="card">
-    <div class="card-title">
-      <div>
-        <div class="protocol">Protocolo: {{ r.protocolNumber || ('#EG-' + r.id + '-2026') }}</div>
-        <div class="report-title">{{ r.title }}</div>
-      </div>
-      <span class="badge badge-status">{{ statusLabel(r.status) }}</span>
-    </div>
-    <div class="report-desc">{{ r.description }}</div>
-  </div>
+  @if (loading()) {
+    <p class="loading">Carregando...</p>
+  }
 
-  <div *ngIf="suggestion() as s" class="card ai-card">
-    <div class="response-header">
-      <div>
-        <div class="section-title">Sugestão da IA</div>
-        <div class="response-meta">
-          <span>Use, ajuste ou desconsidere antes de emitir o parecer.</span>
+  @if (manifestation(); as m) {
+    <div class="card confirmation-card">
+      <div class="confirmation-header">
+        <div class="confirmation-title">
+          <span class="report-title">{{ m.title }}</span>
+          <span class="confirmation-subtitle">Tipo: {{ m.type }}</span>
+        </div>
+        <div class="confirmation-badges">
+          <span class="badge badge-status">{{ statusLabel(m.status) }}</span>
+          @if (m.category) { <span class="badge">{{ m.category }}</span> }
+          @if (m.riskLevel) { <span class="badge badge-manual">{{ m.riskLevel }}</span> }
         </div>
       </div>
-      <button type="button" class="btn-secondary" (click)="useSuggestion()">
-        Inserir sugestão no parecer
-      </button>
-    </div>
-    <pre class="ai-suggestion">{{ s.suggestedResponse }}</pre>
-  </div>
 
-  <div class="card">
-    <div class="section-title">Provas anexadas pelo denunciante</div>
-    <p class="hint">Registre uma observação por prova. Suas observações ficam vinculadas ao parecer preliminar.</p>
+      <p class="report-desc">{{ m.description }}</p>
 
-    <div *ngIf="proofs().length === 0" class="empty">Nenhuma prova anexada.</div>
-
-    <div *ngFor="let p of proofs()" class="proof-row">
-      <div class="proof-info">
-        <a [href]="previewUrl(p.file)" target="_blank" class="proof-name">
-          <span>{{ p.file.name }}</span>
-        </a>
-        <span class="proof-meta">{{ p.file.contentType }} · {{ fileSizeLabel(p.file.size) }}</span>
-        <span *ngIf="p.savedAt" class="proof-saved">Salva em {{ formatDateTime(p.savedAt) }}</span>
+      <div class="confirmation-kv">
+        <div class="kv-item">
+          <span class="kv-label">Prazo da fase atual</span>
+          <span class="kv-value">{{ m.deadlineAt ?? 'Sem prazo definido' }}</span>
+        </div>
+        <div class="kv-item">
+          <span class="kv-label">Registrada em</span>
+          <span class="kv-value">{{ m.createdAt }}</span>
+        </div>
       </div>
-      <textarea
-        rows="3"
-        class="textarea small"
-        placeholder="Observação do ouvidor sobre esta prova"
-        [value]="p.observation"
-        (input)="updateObservation(p.file.id, $any($event.target).value)">
-      </textarea>
-      <div class="proof-actions">
-        <button type="button"
-                class="btn-secondary small"
-                [disabled]="p.saving"
-                (click)="saveObservation(p)">
-          {{ p.saving ? 'Salvando...' : (p.savedAt ? 'Atualizar' : 'Salvar') }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card response-card">
-    <div class="section-title">Decisão do parecer preliminar</div>
-
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="decision-options">
-        <label class="decision-option" [class.selected]="currentDecision === 'ACATAR'">
-          <input type="radio" formControlName="decision" value="ACATAR" />
-          <div>
-            <strong>{{ decisionLabel('ACATAR') }}</strong>
-            <span class="hint">{{ decisionHint('ACATAR') }}</span>
-          </div>
-        </label>
-
-        <label class="decision-option" [class.selected]="currentDecision === 'NEGAR'">
-          <input type="radio" formControlName="decision" value="NEGAR" />
-          <div>
-            <strong>{{ decisionLabel('NEGAR') }}</strong>
-            <span class="hint">{{ decisionHint('NEGAR') }}</span>
-          </div>
-        </label>
-
-        <label class="decision-option" [class.selected]="currentDecision === 'NEGAR_FALTA_PROVAS'">
-          <input type="radio" formControlName="decision" value="NEGAR_FALTA_PROVAS" />
-          <div>
-            <strong>{{ decisionLabel('NEGAR_FALTA_PROVAS') }}</strong>
-            <span class="hint">{{ decisionHint('NEGAR_FALTA_PROVAS') }}</span>
-          </div>
-        </label>
-      </div>
-
-      <div *ngIf="currentDecision === 'ACATAR'" class="form-block">
-        <label class="field">
-          <span class="field-label">Tipo de penalidade *</span>
-          <select formControlName="penaltyType" class="select">
-            <option *ngFor="let opt of penaltyOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span class="field-label">Descrição da penalidade (opcional)</span>
-          <textarea
-            formControlName="penaltyDescription"
-            rows="4"
-            class="textarea"
-            placeholder="Detalhe a penalidade proposta"></textarea>
-        </label>
-      </div>
-
-      <div *ngIf="currentDecision !== 'ACATAR'" class="form-block">
-        <label class="field">
-          <span class="field-label">Justificativa *</span>
-          <textarea
-            formControlName="justification"
-            rows="6"
-            class="textarea"
-            placeholder="Explique a decisão"></textarea>
-        </label>
-      </div>
-
-      <div *ngIf="serverError()" class="error">{{ serverError() }}</div>
 
       <div class="actions">
-        <button type="submit" class="btn-primary" [disabled]="submitting()">
-          {{ existingPreliminary() ? 'Atualizar parecer' : 'Emitir parecer preliminar' }}
+        <button class="btn-secondary" [disabled]="exportingPdf()" (click)="exportPdf()">
+          {{ exportingPdf() ? 'Exportando...' : 'Exportar PDF' }}
+        </button>
+        <button class="btn-primary" [disabled]="advancingWorkflow() || m.status === 'RESOLVED' || m.status === 'CLOSED'" (click)="advanceWorkflow()">
+          {{ advancingWorkflow() ? 'Avançando...' : 'Avançar fase' }}
         </button>
       </div>
-    </form>
-  </div>
+    </div>
 
-  <div *ngIf="(result() ?? existingPreliminary()) as res" class="card confirmation-card">
-    <div class="confirmation-header">
-      <div class="confirmation-title">
-        <div class="section-title">Parecer registrado</div>
-        <div class="confirmation-subtitle">
-          {{ result() ? 'Parecer emitido com sucesso.' : 'Parecer já emitido para este caso.' }}
+    <!-- Designação do responsável -->
+    <div class="card">
+      <div class="section-title">Responsável</div>
+      @if (assignment(); as a) {
+        <p class="hint">{{ userName(a.responsibleId) }} atribuído em {{ a.createdAt }}.</p>
+      } @else {
+        <p class="hint">Nenhum responsável atribuído ainda.</p>
+        <div class="form-block">
+          <div class="field">
+            <label class="field-label">Analista responsável</label>
+            <select class="select" [(ngModel)]="assignResponsibleId">
+              <option [ngValue]="null">Selecione um analista</option>
+              @for (u of users(); track u.id) {
+                <option [ngValue]="u.id">{{ u.name }} ({{ roleLabel(u.role) }})</option>
+              }
+            </select>
+          </div>
+          <div class="actions">
+            <button class="btn-secondary" [disabled]="assigningAuto()" (click)="assignAuto()">
+              {{ assigningAuto() ? 'Designando...' : 'Designar automaticamente' }}
+            </button>
+            <button class="btn-primary" [disabled]="!assignResponsibleId || assigningManual()" (click)="assignManual()">
+              {{ assigningManual() ? 'Atribuindo...' : 'Atribuir manualmente' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Acusados / conflito de interesse -->
+    <div class="card">
+      <div class="section-title">Acusados (conflito de interesse)</div>
+      @for (acc of accusations(); track acc.id) {
+        <p class="hint">{{ userName(acc.accusedUserId) }}</p>
+      } @empty {
+        <p class="empty">Nenhum acusado registrado.</p>
+      }
+      <div class="form-block">
+        <div class="field">
+          <label class="field-label">Usuário acusado</label>
+          <select class="select" [(ngModel)]="accusedUserId">
+            <option [ngValue]="null">Selecione um usuário</option>
+            @for (u of users(); track u.id) {
+              <option [ngValue]="u.id">{{ u.name }} ({{ roleLabel(u.role) }})</option>
+            }
+          </select>
+        </div>
+        <div class="actions">
+          <button class="btn-primary" [disabled]="!accusedUserId || submittingAccusation()" (click)="addAccusation()">
+            {{ submittingAccusation() ? 'Registrando...' : 'Registrar acusado' }}
+          </button>
         </div>
       </div>
-      <div class="confirmation-badges">
-        <span class="badge badge-status">{{ statusLabel(res.reportStatus) }}</span>
-        <span class="badge"
-              [class.badge-ai]="res.decision === 'ACATAR'"
-              [class.badge-manual]="res.decision !== 'ACATAR'">
-          {{ decisionLabel(res.decision) }}
-        </span>
+    </div>
+
+    <!-- Decisões / pareceres -->
+    <div class="card response-card">
+      <div class="section-title">Decisões e pareceres</div>
+
+      @for (d of decisions(); track d.id) {
+        <div class="response-header">
+          <div class="response-title">
+            <span class="badge badge-status">{{ d.type }}</span>
+            <span class="response-meta">{{ userName(d.authorId) }} · {{ d.createdAt }}</span>
+          </div>
+        </div>
+        <p class="report-desc">{{ d.content }}</p>
+      } @empty {
+        <p class="empty">Nenhuma decisão registrada ainda.</p>
+      }
+
+      <div class="form-block">
+        <div class="field">
+          <label class="field-label">Tipo</label>
+          <select class="select" [(ngModel)]="decisionType">
+            <option value="DECISION">Decisão</option>
+            <option value="OPINION">Parecer</option>
+          </select>
+        </div>
+
+        @if (aiSuggestion()) {
+          <div class="ai-card card">
+            <span class="section-title">Sugestão da IA</span>
+            <p class="ai-suggestion">{{ aiSuggestion() }}</p>
+            <div class="actions">
+              <button class="btn-secondary" (click)="useSuggestion()">Usar sugestão</button>
+            </div>
+          </div>
+        }
+
+        <div class="field">
+          <label class="field-label">Conteúdo</label>
+          <textarea class="textarea" rows="5" [(ngModel)]="decisionContent" placeholder="Descreva a decisão ou parecer..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" [disabled]="loadingSuggestion()" (click)="requestSuggestion()">
+            {{ loadingSuggestion() ? 'Consultando IA...' : 'Sugestão da IA' }}
+          </button>
+          <button class="btn-primary" [disabled]="!decisionContent.trim() || submittingDecision()" (click)="submitDecision()">
+            {{ submittingDecision() ? 'Enviando...' : 'Registrar' }}
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="confirmation-kv">
-      <div class="kv-item">
-        <span class="kv-label">Submetido em</span>
-        <span class="kv-value">{{ formatDateTime(res.submittedAt) }}</span>
-      </div>
-      <div class="kv-item">
-        <span class="kv-label">Ouvidor</span>
-        <span class="kv-value">{{ res.ouvidorName || '-' }}</span>
-      </div>
-      <div *ngIf="res.decision === 'ACATAR'" class="kv-item">
-        <span class="kv-label">Penalidade</span>
-        <span class="kv-value">{{ res.penaltyType || '-' }}</span>
-      </div>
-      <div *ngIf="res.decision !== 'ACATAR'" class="kv-item">
-        <span class="kv-label">Justificativa</span>
-        <span class="kv-value">{{ res.justification ? (res.justification | slice:0:120) : '-' }}{{ (res.justification?.length || 0) > 120 ? '...' : '' }}</span>
+    <!-- Anexos -->
+    <div class="card">
+      <div class="section-title">Anexos</div>
+      @for (att of attachments(); track att.id) {
+        <div class="proof-row">
+          <div class="proof-info">
+            <a class="proof-name" (click)="downloadAttachment(att)">{{ att.fileName }}</a>
+            <span class="proof-meta">{{ fileSizeLabel(att.fileSize) }}</span>
+          </div>
+        </div>
+      } @empty {
+        <p class="empty">Nenhum anexo.</p>
+      }
+
+      <div class="form-block">
+        <input type="file" (change)="onFileSelected($event)" />
+        <div class="actions">
+          <button class="btn-primary" [disabled]="!selectedFile || uploadingAttachment()" (click)="uploadAttachment()">
+            {{ uploadingAttachment() ? 'Enviando...' : 'Anexar arquivo' }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+
+    <!-- Auditoria -->
+    <div class="card">
+      <div class="section-title">Trilha de auditoria</div>
+      @for (entry of auditEntries(); track entry.id) {
+        <div class="proof-row">
+          <div class="proof-info">
+            <span class="proof-name">{{ entry.action }}</span>
+            <span class="proof-meta">{{ userName(entry.actorId) }} · {{ entry.occurredAt }}</span>
+          </div>
+          @if (entry.description) {
+            <span class="proof-meta">{{ entry.description }}</span>
+          }
+        </div>
+      } @empty {
+        <p class="empty">Nenhum registro de auditoria ainda.</p>
+      }
+    </div>
+  }
 </div>

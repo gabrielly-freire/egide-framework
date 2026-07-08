@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,6 +41,10 @@ public class Manifestation extends BaseEntity {
 
     @Column(length = 50)
     private String riskLevel;
+
+    // Prazo (SLA) da fase atual do workflow. Carimbado pelo Core a partir do WorkflowTemplate
+    // (now + Duration); null quando a fase não define prazo.
+    private LocalDateTime deadlineAt;
 
     @Column(length = 100)
     private String affectedRegion;

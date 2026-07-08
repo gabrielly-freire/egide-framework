@@ -1,35 +1,26 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError } from 'rxjs';
-import { BaseService } from '../base/base';
-import { User } from '../../models/usuario.model';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
+import { User, UserResponse } from '../../models/usuario.model';
 
-export interface PageResponse<T> {
-  content: T[];
-  number: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  first: boolean;
-  last: boolean;
-}
+// GET /v1/users e POST /v1/users exigem ROLE_ADMIN e não são paginados no backend
+// (não há endpoints de update/delete de usuário).
+@Injectable({ providedIn: 'root' })
+export class UserService {
+  private readonly url = '/api/v1/users';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class UserService extends BaseService<User> {
+  constructor(private readonly http: HttpClient) {}
 
-  constructor(http: HttpClient) {
-    super(http, '/api/v1/user-info');
+  private handleError(error: any) {
+    console.error(`Erro na requisição para ${this.url}:`, error);
+    return throwError(() => error.error?.message || 'Erro interno no servidor');
   }
 
-  listPaged(page: number = 0, size: number = 10): Observable<PageResponse<User>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+  listAll(): Observable<UserResponse[]> {
+    return this.http.get<UserResponse[]>(this.url).pipe(catchError(err => this.handleError(err)));
+  }
 
-    return this.http.get<PageResponse<User>>(this.url, { params }).pipe(
-      catchError(err => this.handleError(err))
-    );
+  create(user: User): Observable<UserResponse> {
+    return this.http.post<UserResponse>(this.url, user).pipe(catchError(err => this.handleError(err)));
   }
 }

@@ -23,6 +23,7 @@ public interface ManifestationMapper {
     @Mapping(target = "description", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "riskLevel", ignore = true)
+    @Mapping(target = "deadlineAt", ignore = true)
     Manifestation toEntity(ManifestationRequest request);
 
     /**
@@ -39,6 +40,7 @@ public interface ManifestationMapper {
     @Mapping(target = "description", ignore = true)
     @Mapping(target = "category", ignore = true)
     @Mapping(target = "riskLevel", ignore = true)
+    @Mapping(target = "deadlineAt", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(ManifestationRequest request, @MappingTarget Manifestation entity);
 }
