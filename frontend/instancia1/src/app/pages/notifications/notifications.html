@@ -20,19 +20,19 @@
     <div
       class="item"
       *ngFor="let n of notifications()"
-      [class.unread]="!n.readAt"
+      [class.unread]="!n.read"
       (click)="markAsRead(n)"
     >
       <div class="icon">
-        <mat-icon>{{ n.readAt ? 'notifications' : 'notifications_active' }}</mat-icon>
+        <mat-icon>{{ n.read ? 'notifications' : 'notifications_active' }}</mat-icon>
       </div>
 
       <div class="content">
-        <div class="item-title">{{ n.title }}</div>
+        <div class="item-title">{{ typeLabel(n.type) }}</div>
         <div class="item-message" *ngIf="n.message">{{ n.message }}</div>
         <div class="meta">
           <span *ngIf="n.createdAt">{{ n.createdAt }}</span>
-          <span *ngIf="n.reportId">• Manifestação #{{ n.reportId }}</span>
+          <span *ngIf="n.manifestationId">• Manifestação #{{ n.manifestationId }}</span>
         </div>
       </div>
     </div>

@@ -112,8 +112,38 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.btn-view { color: #6366f1; }
+.btn-view {
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+}
 .btn-view:hover { background: #e0e7ff; }
 
 .btn-export { color: #dc2626; }
 .btn-export:hover { background: #fee2e2; }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.btn-page {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-page:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

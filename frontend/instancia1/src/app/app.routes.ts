@@ -35,14 +35,6 @@ export const routes: Routes = [
         data: { roles: ['LISTENER', 'GENERAL_LISTENER', 'MANAGER', 'ADMIN'] }
       },
       {
-        path: 'minhas-manifestacoes',
-        loadComponent: () =>
-          import('./pages/my-reports/report-list').then(m => m.MyReports),
-        title: 'Égide - Minhas Manifestações',
-        canActivate: [roleGuard],
-        data: { roles: ['REMONSTRANT', 'ADMIN'] }
-      },
-      {
         path: 'cadastrar-manifestacao',
         loadComponent: () =>
           import('./pages/report-registration/report-registration').then(m => m.ReportRegistration),
@@ -51,10 +43,10 @@ export const routes: Routes = [
         data: { roles: ['REMONSTRANT', 'ADMIN'] }
       },
       {
-        path: 'manifestacoes/:id/recurso',
+        path: 'consultar-manifestacao',
         loadComponent: () =>
-          import('./pages/recurso/recurso').then(m => m.Recurso),
-        title: 'Égide - Abrir recurso',
+          import('./pages/my-reports/report-list').then(m => m.MyReports),
+        title: 'Égide - Consultar Manifestação',
         canActivate: [roleGuard],
         data: { roles: ['REMONSTRANT', 'ADMIN'] }
       },
@@ -63,78 +55,15 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/report-list/report-list').then(m => m.ReportList),
         title: 'Égide - Manifestações',
         canActivate: [roleGuard],
-        data: { roles: ['MANAGER', 'ADMIN'] }
+        data: { roles: ['LISTENER', 'GENERAL_LISTENER', 'MANAGER', 'ADMIN'] }
       },
       {
-        path: 'manifestacoes/:id/parecer-preliminar',
+        path: 'manifestacoes/:id',
         loadComponent: () =>
           import('./pages/parecer-preliminar/parecer-preliminar').then(m => m.ParecerPreliminar),
-        title: 'Égide - Parecer Preliminar',
+        title: 'Égide - Detalhe da Manifestação',
         canActivate: [roleGuard],
-        data: { roles: ['LISTENER', 'ADMIN'] }
-      },
-      {
-        path: 'ouvidor/casos',
-        loadComponent: () =>
-          import('./pages/ouvidor-cases/ouvidor-cases').then(m => m.OuvidorCases),
-        title: 'Égide - Meus casos atribuídos',
-        canActivate: [roleGuard],
-        data: { roles: ['LISTENER', 'ADMIN'] }
-      },
-      {
-        path: 'recurso/casos',
-        loadComponent: () =>
-          import('./pages/recurso-cases/recurso-cases').then(m => m.RecursoCases),
-        title: 'Égide - Recursos atribuídos',
-        canActivate: [roleGuard],
-        data: { roles: ['LISTENER', 'ADMIN'] }
-      },
-      {
-        path: 'recurso/analise/:id',
-        loadComponent: () =>
-          import('./pages/analise-recurso/analise-recurso').then(m => m.AnaliseRecurso),
-        title: 'Égide - Análise de recurso',
-        canActivate: [roleGuard],
-        data: { roles: ['LISTENER', 'ADMIN'] }
-      },
-      {
-        path: 'manifestacoes/:id/responder',
-        redirectTo: 'manifestacoes/:id/parecer-preliminar'
-      },
-      {
-        path: 'ouvidor-geral/casos',
-        loadComponent: () =>
-          import('./pages/ouvidor-geral-cases/ouvidor-geral-cases').then(m => m.OuvidorGeralCases),
-        title: 'Égide - Ouvidor Geral',
-        canActivate: [roleGuard],
-        data: { roles: ['GENERAL_LISTENER', 'ADMIN'] }
-      },
-      {
-        path: 'manifestacoes/:id/defesa',
-        loadComponent: () =>
-          import('./pages/defense-review/defense-review').then(m => m.DefenseReview),
-        title: 'Égide - Analisar Defesa'
-      },
-      {
-        path: 'defesa/casos',
-        loadComponent: () =>
-          import('./pages/denounced-cases/denounced-cases').then(m => m.DenouncedCases),
-        title: 'Égide - Casos contra mim'
-      },
-      {
-        path: 'defesa/casos/:id',
-        loadComponent: () =>
-          import('./pages/denounced-case/denounced-case').then(m => m.DenouncedCase),
-        title: 'Égide - Enviar Defesa'
-      },
-      {
-        path: 'ouvidor-geral/casos/:id',
-        loadComponent: () =>
-          import('./pages/ouvidor-geral-validation/ouvidor-geral-validation')
-            .then(m => m.OuvidorGeralValidation),
-        title: 'Égide - Validar relatório',
-        canActivate: [roleGuard],
-        data: { roles: ['GENERAL_LISTENER', 'ADMIN'] }
+        data: { roles: ['LISTENER', 'GENERAL_LISTENER', 'MANAGER', 'ADMIN'] }
       },
       {
         path: 'usuarios',

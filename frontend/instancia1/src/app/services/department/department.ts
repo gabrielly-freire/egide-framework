@@ -1,29 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map, throwError } from 'rxjs';
-import { Department } from '../../models/department.model';
+import { Observable, catchError, throwError } from 'rxjs';
+import { CreateDepartmentRequest, Department } from '../../models/department.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class DepartmentService {
   private readonly url = '/api/v1/departments';
 
   constructor(private readonly http: HttpClient) {}
 
+  private handleError(error: any) {
+    console.error(`Erro na requisição para ${this.url}:`, error);
+    return throwError(() => error.error?.message || 'Erro interno no servidor');
+  }
+
   listAll(): Observable<Department[]> {
-    return this.http.get<any>(this.url).pipe(
-      map(response => {
-        const rawList = Array.isArray(response) ? response : (response?.content ?? []);
-        return rawList.map((item: any) => ({
-          id: Number(item.id),
-          name: String(item.name ?? item.nome ?? item.description ?? `Departamento ${item.id}`)
-        }));
-      }),
-      catchError(error => {
-        const message = error?.error?.message ?? 'Erro ao carregar departamentos.';
-        return throwError(() => new Error(message));
-      })
-    );
+    return this.http.get<Department[]>(this.url).pipe(catchError(err => this.handleError(err)));
+  }
+
+  create(request: CreateDepartmentRequest): Observable<Department> {
+    return this.http.post<Department>(this.url, request).pipe(catchError(err => this.handleError(err)));
   }
 }

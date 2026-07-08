@@ -17,17 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse create(@Valid @RequestBody CreateUserRequest request) {
         return userService.create(request);
     }
 
+    // Sem restrição de papel: qualquer autenticado pode listar (usado pelos dropdowns de
+    // responsável/acusado na tela de detalhe da manifestação). Criação continua só ADMIN.
     @GetMapping
     public List<UserResponse> findAll() {
         return userService.findAll();

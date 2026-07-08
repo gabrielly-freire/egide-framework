@@ -1,7 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ReportService } from '../../services/report/report.service';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
+import { ManifestationService } from '../../services/manifestation/manifestation.service';
+import { ManifestationHistoryService } from '../../services/manifestation/manifestation-history.service';
+import { AttachmentService } from '../../services/attachment/attachment.service';
+import { ManifestationResponse, MANIFESTATION_TYPE_OPTIONS } from '../../models/manifestation.model';
 
 @Component({
   selector: 'app-report-registration',
@@ -11,52 +15,89 @@ import { ReportService } from '../../services/report/report.service';
   styleUrl: './report-registration.css'
 })
 export class ReportRegistration {
-  reportForm: FormGroup;
-  loading = false;
+  readonly typeOptions = MANIFESTATION_TYPE_OPTIONS;
+
+  reportForm;
+  loading = signal(false);
   selectedFile: File | null = null;
 
-  constructor(private fb: FormBuilder, private reportService: ReportService) {
-    this.reportForm = this.fb.group({
+  created = signal<ManifestationResponse | null>(null);
+  uploadingAttachment = signal(false);
+  attachmentUploaded = signal(false);
+  serverError = signal<string | null>(null);
+
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly manifestationService: ManifestationService,
+    private readonly historyService: ManifestationHistoryService,
+    private readonly attachmentService: AttachmentService
+  ) {
+    this.reportForm = this.fb.nonNullable.group({
       title: ['', [Validators.required]],
-      description: ['', [Validators.required]]
+      description: ['', [Validators.required]],
+      type: [this.typeOptions[0].value, [Validators.required]],
+      anonymous: [false]
     });
   }
 
-  onFileSelected(event: any) {
-    const file: File = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-    }
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.selectedFile = file;
   }
 
-  onSubmit() {
-    if (this.reportForm.valid) {
-      this.loading = true;
+  onSubmit(): void {
+    if (this.reportForm.invalid) {
+      this.reportForm.markAllAsTouched();
+      return;
+    }
 
-      const formData = new FormData();
+    this.loading.set(true);
+    this.serverError.set(null);
 
-      const reportData = new Blob([JSON.stringify(this.reportForm.value)], {
-        type: 'application/json'
-      });
-      formData.append('report', reportData);
-
-      if (this.selectedFile) {
-        formData.append('files', this.selectedFile);
-      }
-
-      this.reportService.create(formData as any).subscribe({
-        next: () => {
-          alert('Manifestação enviada com sucesso!');
-          this.reportForm.reset();
-          this.selectedFile = null;
-          this.loading = false;
+    this.manifestationService
+      .create(this.reportForm.getRawValue())
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: manifestation => {
+          this.created.set(manifestation);
+          this.historyService.add({
+            protocolNumber: manifestation.protocolNumber,
+            title: manifestation.title,
+            createdAt: manifestation.createdAt
+          });
         },
-        error: (err) => {
-          console.error('Erro ao enviar:', err);
-          alert('Erro ao enviar manifestação. Verifique a conexão com o servidor.');
-          this.loading = false;
+        error: err => {
+          const msg = typeof err === 'string' ? err : 'Erro ao enviar manifestação. Verifique a conexão com o servidor.';
+          this.serverError.set(msg);
         }
       });
-    }
+  }
+
+  uploadAttachment(): void {
+    const manifestation = this.created();
+    if (!manifestation || !this.selectedFile) return;
+
+    this.uploadingAttachment.set(true);
+    this.attachmentService
+      .upload(manifestation.id, this.selectedFile)
+      .pipe(finalize(() => this.uploadingAttachment.set(false)))
+      .subscribe({
+        next: () => this.attachmentUploaded.set(true),
+        error: () => this.serverError.set('Não foi possível anexar o arquivo.')
+      });
+  }
+
+  newManifestation(): void {
+    this.created.set(null);
+    this.selectedFile = null;
+    this.attachmentUploaded.set(false);
+    this.serverError.set(null);
+    this.reportForm.reset({
+      title: '',
+      description: '',
+      type: this.typeOptions[0].value,
+      anonymous: false
+    });
   }
 }

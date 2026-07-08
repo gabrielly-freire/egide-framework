@@ -99,6 +99,18 @@
 .yellow-bar { background: #f59e0b; }
 .green-bar { background: #10b981; }
 .red-bar { background: #ef4444; }
+.blue-bar { background: #3b82f6; }
+
+.empty-hint { color: var(--text-muted); font-size: 13px; }
+
+.feedback-error {
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
 
 .percentage { font-size: 13px; font-weight: 700; color: var(--text-main); }
 

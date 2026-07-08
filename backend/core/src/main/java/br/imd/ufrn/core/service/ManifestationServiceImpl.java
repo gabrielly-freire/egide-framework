@@ -41,7 +41,7 @@ public class ManifestationServiceImpl implements ManifestationService {
         entity.setStatus(ManifestationStatus.REGISTERED);
         entity.setActive(true);
         AnonymizationResult anonymized = anonymizationStrategy.anonymize(new AnonymizationContext(
-                request.anonymous(), request.type(), request.title(), request.description()));
+                request.anonymous(), request.type(), request.title(), request.description())); //anonimiza, outro hot spot
         entity.setTitle(anonymized.title());
         entity.setDescription(anonymized.description());
         Duration initialDeadline = workflowTemplate.initialDeadline();
@@ -49,7 +49,7 @@ public class ManifestationServiceImpl implements ManifestationService {
             entity.setDeadlineAt(LocalDateTime.now().plus(initialDeadline));
         }
         Manifestation saved = repository.save(entity);
-        eventPublisher.publishEvent(new ManifestationCreatedEvent(saved.getId()));
+        eventPublisher.publishEvent(new ManifestationCreatedEvent(saved.getId())); //quem escuta é ManifestationCreatedListener
         return mapper.toResponse(saved);
     }
 

@@ -1,68 +1,80 @@
 <div class="list-container">
   <div class="page-header">
     <div>
-      <span class="subtitle">PAINEL DO RECLAMANTE</span>
+      <span class="subtitle">PAINEL DA EQUIPE</span>
       <h1 class="title">Manifestações</h1>
     </div>
-    <button class="btn-new" routerLink="/cadastrar-manifestacao">+ NOVA MANIFESTAÇÃO</button>
   </div>
 
   <div class="summary-cards">
     <div class="card">
       <span class="card-label">TOTAL</span>
-      <div class="card-value">{{ reports().length }}</div>
+      <div class="card-value">{{ totalElements() }}</div>
       <span class="card-desc">Manifestações registradas no sistema</span>
-    </div>
-    <div class="card">
-      <span class="card-label">EM ANÁLISE</span>
-      <div class="card-value">{{ reportsInAnalysis() }}</div>
-    </div>
-    <div class="card">
-      <span class="card-label">CONCLUÍDAS</span>
-      <div class="card-value">{{ reportsCompleted() }}</div>
     </div>
   </div>
 
   <div class="table-container">
     <div class="table-header">
-      <h2>HISTÓRICO RECENTE</h2>
+      <h2>TODAS AS MANIFESTAÇÕES</h2>
     </div>
     <table class="report-table">
       <thead>
         <tr>
           <th>PROTOCOLO / TÍTULO</th>
+          <th>TIPO</th>
           <th>STATUS</th>
-          <th>DATA DE ENVIO</th>
+          <th>CATEGORIA / RISCO</th>
+          <th>PRAZO</th>
           <th>AÇÕES</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let report of reports()">
+        <tr *ngFor="let m of manifestations()">
           <td>
-            <span class="report-protocol">#EG-{{ report.id }}-2026</span>
-            <div class="report-title">{{ report.title }}</div>
+            <span class="report-protocol">{{ m.protocolNumber }}</span>
+            <div class="report-title">{{ m.title }}</div>
           </td>
+          <td>{{ m.type }}</td>
           <td>
-            <span class="status-badge" [ngClass]="getStatusClass(report.status)">
-              {{ report.status || 'PENDENTE' }}
+            <span class="status-badge" [ngClass]="statusClass(m.status)">
+              {{ statusLabel(m.status) }}
             </span>
           </td>
-          <td>{{report.createdAt}}</td>
+          <td>{{ m.category ?? '-' }} / {{ m.riskLevel ?? '-' }}</td>
+          <td>{{ m.deadlineAt ?? '-' }}</td>
           <td>
-            <button class="btn-view" [routerLink]="['/manifestacoes', report.id, 'parecer-preliminar']">
-                <mat-icon>visibility</mat-icon>
-            </button>
-            <button class="btn-export" (click)="downloadPdf(report.id!)" title="Exportar PDF">
-                <mat-icon>picture_as_pdf</mat-icon>
+            <button class="btn-view" [routerLink]="['/manifestacoes', m.id]" title="Ver detalhe">
+              Ver detalhe
             </button>
           </td>
         </tr>
-        <tr *ngIf="reports().length === 0">
-          <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">
+        <tr *ngIf="!loading() && manifestations().length === 0">
+          <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
             Nenhuma manifestação encontrada.
+          </td>
+        </tr>
+        <tr *ngIf="loading()">
+          <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+            Carregando...
           </td>
         </tr>
       </tbody>
     </table>
+
+    <div class="pagination">
+      <button type="button" class="btn-page" (click)="previousPage()" [disabled]="page() === 0 || loading()">
+        Anterior
+      </button>
+      <span>Página {{ page() + 1 }} de {{ totalPages() || 1 }}</span>
+      <button
+        type="button"
+        class="btn-page"
+        (click)="nextPage()"
+        [disabled]="page() + 1 >= totalPages() || loading()"
+      >
+        Próxima
+      </button>
+    </div>
   </div>
 </div>

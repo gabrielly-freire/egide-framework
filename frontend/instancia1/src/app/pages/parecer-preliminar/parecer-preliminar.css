@@ -298,6 +298,7 @@
   font-weight: 600;
   color: #0f172a;
   text-decoration: none;
+  cursor: pointer;
 }
 .proof-name:hover { text-decoration: underline; }
 

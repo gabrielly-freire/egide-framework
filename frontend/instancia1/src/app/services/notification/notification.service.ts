@@ -1,37 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { NotificationDTO } from '../../models/notification.model';
-import { BaseService } from '../base/base';
+import { Observable, catchError, map, throwError } from 'rxjs';
+import { NotificationResponse } from '../../models/notification.model';
 
 @Injectable({ providedIn: 'root' })
-export class NotificationService extends BaseService<NotificationDTO> {
-  constructor(http: HttpClient) {
-    super(http, '/api/v1/notifications');
+export class NotificationService {
+  private readonly url = '/api/v1/notifications';
+
+  constructor(private readonly http: HttpClient) {}
+
+  private handleError(error: any) {
+    console.error(`Erro na requisição para ${this.url}:`, error);
+    return throwError(() => error.error?.message || 'Erro interno no servidor');
   }
 
-  listMyNotifications(): Observable<NotificationDTO[]> {
-    return this.http.get<NotificationDTO[]>(this.url).pipe(
-      catchError(err => this.handleError(err))
-    );
+  list(): Observable<NotificationResponse[]> {
+    return this.http.get<NotificationResponse[]>(this.url).pipe(catchError(err => this.handleError(err)));
   }
 
   unreadCount(): Observable<number> {
-    return this.http.get<number>(`${this.url}/unread-count`).pipe(
-      catchError(err => this.handleError(err))
-    );
+    return this.list().pipe(map(list => list.filter(n => !n.read).length));
   }
 
-  markAsRead(id: number | string): Observable<void> {
-    return this.http.post<void>(`${this.url}/${id}/read`, {}).pipe(
-      catchError(err => this.handleError(err))
-    );
-  }
-
-  markAllAsRead(): Observable<void> {
-    return this.http.post<void>(`${this.url}/read-all`, {}).pipe(
-      catchError(err => this.handleError(err))
-    );
+  markAsRead(id: number | string): Observable<NotificationResponse> {
+    return this.http
+      .post<NotificationResponse>(`${this.url}/${id}/read`, {})
+      .pipe(catchError(err => this.handleError(err)));
   }
 }

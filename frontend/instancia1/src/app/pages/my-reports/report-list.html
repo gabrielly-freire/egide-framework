@@ -2,109 +2,105 @@
   <div class="page-header">
     <div>
       <span class="subtitle">PAINEL DO RECLAMANTE</span>
-      <h1 class="title">Minhas Manifestações</h1>
+      <h1 class="title">Consultar Manifestação</h1>
     </div>
     <button class="btn-new" routerLink="/cadastrar-manifestacao">+ NOVA MANIFESTAÇÃO</button>
   </div>
 
-  <div class="summary-cards">
-    <div class="card">
-      <span class="card-label">TOTAL</span>
-      <div class="card-value">{{ reports().length }}</div>
-      <span class="card-desc">Manifestações registradas no sistema</span>
-    </div>
-    <div class="card">
-      <span class="card-label">EM ANÁLISE</span>
-      <div class="card-value">{{ reportsInAnalysis() }}</div>
-    </div>
-    <div class="card">
-      <span class="card-label">CONCLUÍDAS</span>
-      <div class="card-value">{{ reportsCompleted() }}</div>
-    </div>
-  </div>
-
-  <div class="table-container">
+  <div class="table-container search-card">
     <div class="table-header">
-      <h2>HISTÓRICO RECENTE</h2>
+      <h2>BUSCAR POR PROTOCOLO</h2>
     </div>
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>PROTOCOLO / TÍTULO</th>
-          <th>STATUS</th>
-          <th>DATA DE ENVIO</th>
-          <th>AÇÕES</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let report of reports()">
-          <td>
-            <span class="report-protocol">#EG-{{ report.id }}-2026</span>
-            <div class="report-title">{{ report.title }}</div>
-          </td>
-          <td>
-            <span class="status-badge" [ngClass]="getStatusClass(report.status)">
-              {{ statusLabel(report.status) }}
-            </span>
-          </td>
-          <td>{{report.createdAt}}</td>
-          <td>
-            <button *ngIf="report.status === 'GENERAL_VALIDATED'"
-                [routerLink]="['/manifestacoes', report.id, 'recurso']"
-                class="btn-view" title="Abrir recurso">
-              <mat-icon>gavel</mat-icon>
-            </button>
-            <button *ngIf="report.status === 'ANALYZED' && !report.hasSurvey"
-                (click)="openFeedback(report.id!)"
-                class="btn-feedback" title="Avaliar Atendimento">
-              <mat-icon>grade</mat-icon>
-            </button>
-          </td>
-        </tr>
-        <tr *ngIf="reports().length === 0">
-          <td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8;">
-            Nenhuma manifestação encontrada.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="modal" *ngIf="showFeedbackModal">
-  <div class="modal-content feedback-card">
-    <h2>Como foi sua experiência?</h2>
-    <p>Sua opinião ajuda a melhorar o canal de ouvidoria.</p>
-
-    <div class="rating-group">
-      <label>Agilidade no atendimento:</label>
-      <div class="stars">
-        <i *ngFor="let s of [1,2,3,4,5]" 
-           (click)="feedback.speedRating = s"
-           [class.fas]="feedback.speedRating >= s" 
-           [class.far]="feedback.speedRating < s" 
-           class="fa-star"></i>
-      </div>
-    </div>
-
-    <div class="rating-group">
-      <label>Resolução do problema:</label>
-      <div class="stars">
-        <i *ngFor="let s of [1,2,3,4,5]" 
-           (click)="feedback.resolutionRating = s"
-           [class.fas]="feedback.resolutionRating >= s" 
-           [class.far]="feedback.resolutionRating < s" 
-           class="fa-star"></i>
-      </div>
-    </div>
-
-    <textarea [(ngModel)]="feedback.comments" placeholder="Conte-nos mais (opcional)..."></textarea>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" (click)="showFeedbackModal = false">Pular</button>
-      <button class="btn-submit" (click)="enviarFeedback()" [disabled]="!feedback.speedRating || !feedback.resolutionRating">
-        Enviar Feedback
+    <div class="search-row">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Ex: 2026-abcdef1234"
+        [(ngModel)]="protocolInput"
+        (keyup.enter)="search()"
+      />
+      <button class="btn-new" (click)="search()" [disabled]="loading()">
+        {{ loading() ? 'BUSCANDO...' : 'BUSCAR' }}
       </button>
     </div>
+
+    @if (notFound()) {
+      <p class="feedback-error">Nenhuma manifestação encontrada para esse protocolo.</p>
+    }
   </div>
+
+  @if (history().length > 0) {
+    <div class="table-container">
+      <div class="table-header">
+        <h2>HISTÓRICO NESTE NAVEGADOR</h2>
+      </div>
+      <table class="report-table">
+        <tbody>
+          <tr *ngFor="let entry of history()" (click)="search(entry.protocolNumber)" class="clickable-row">
+            <td>
+              <span class="report-protocol">{{ entry.protocolNumber }}</span>
+              <div class="report-title">{{ entry.title }}</div>
+            </td>
+            <td>{{ entry.createdAt }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (manifestation(); as m) {
+    <div class="table-container detail-card">
+      <div class="table-header">
+        <h2>{{ m.protocolNumber }}</h2>
+      </div>
+      <div class="detail-body">
+        <h3>{{ m.title }}</h3>
+        <p>{{ m.description }}</p>
+
+        <div class="detail-grid">
+          <div>
+            <span class="card-label">STATUS</span>
+            <div><span class="status-badge" [ngClass]="statusClass(m.status)">{{ statusLabel(m.status) }}</span></div>
+          </div>
+          <div>
+            <span class="card-label">TIPO</span>
+            <div>{{ m.type }}</div>
+          </div>
+          <div>
+            <span class="card-label">CATEGORIA</span>
+            <div>{{ m.category ?? 'Ainda não classificada' }}</div>
+          </div>
+          <div>
+            <span class="card-label">NÍVEL DE RISCO</span>
+            <div>{{ m.riskLevel ?? '-' }}</div>
+          </div>
+          <div *ngIf="m.deadlineAt">
+            <span class="card-label">PRAZO DA FASE ATUAL</span>
+            <div>{{ m.deadlineAt }}</div>
+          </div>
+        </div>
+
+        @if (m.status === 'RESOLVED') {
+          <div class="evaluation-box">
+            @if (evaluation()) {
+              <p class="feedback-success">Você já avaliou este atendimento (nota {{ evaluation()!.rating }}/5).</p>
+            } @else {
+              <h4>Avalie o atendimento</h4>
+              <div class="stars">
+                <i *ngFor="let s of [1,2,3,4,5]"
+                   (click)="evaluationForm.rating = s"
+                   [class.fas]="evaluationForm.rating >= s"
+                   [class.far]="evaluationForm.rating < s"
+                   class="fa-star"></i>
+              </div>
+              <textarea [(ngModel)]="evaluationForm.comment" placeholder="Comentário (opcional)..." class="form-control"></textarea>
+              <button class="btn-new" [disabled]="evaluationForm.rating < 1 || submittingEvaluation()" (click)="submitEvaluation()">
+                {{ submittingEvaluation() ? 'ENVIANDO...' : 'ENVIAR AVALIAÇÃO' }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
 </div>

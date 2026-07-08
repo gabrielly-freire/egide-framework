@@ -79,7 +79,7 @@
   <div class="table-container">
     <div class="table-header">
       <h2>Usuarios cadastrados</h2>
-      <span class="table-count">Total: {{ totalElements() }}</span>
+      <span class="table-count">Total: {{ users().length }}</span>
     </div>
 
     <table class="users-table">
@@ -89,16 +89,15 @@
           <th>Login</th>
           <th>Perfil</th>
           <th>Departamento</th>
-          <th>Acoes</th>
         </tr>
       </thead>
       <tbody>
         @if (loading()) {
           <tr>
-            <td colspan="5" class="empty-row">Carregando usuarios...</td>
+            <td colspan="4" class="empty-row">Carregando usuarios...</td>
           </tr>
         } @else {
-          @for (user of users(); track user.id ?? user.username) {
+          @for (user of users(); track user.id) {
             <tr>
               <td>
                 <div class="primary-text">{{ user.name }}</div>
@@ -108,40 +107,15 @@
               <td>
                 <span class="badge-role">{{ roleLabel(user.role) }}</span>
               </td>
-              <td>{{ departmentName(user.departmentId) }}</td>
-              <td>
-                <div class="action-group">
-                  <button type="button" class="btn-action edit" (click)="openEditForm(user)">
-                    Editar
-                  </button>
-                  <button type="button" class="btn-action remove" (click)="deleteUser(user)">
-                    Excluir
-                  </button>
-                </div>
-              </td>
+              <td>{{ user.departmentName ?? '-' }}</td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="empty-row">Nenhum usuario encontrado.</td>
+              <td colspan="4" class="empty-row">Nenhum usuario encontrado.</td>
             </tr>
           }
         }
       </tbody>
     </table>
-  </div>
-
-  <div class="pagination">
-    <button type="button" class="btn-page" (click)="previousPage()" [disabled]="page() === 0 || loading()">
-      Anterior
-    </button>
-    <span>Pagina {{ page() + 1 }} de {{ totalPages() || 1 }}</span>
-    <button
-      type="button"
-      class="btn-page"
-      (click)="nextPage()"
-      [disabled]="page() + 1 >= totalPages() || loading()"
-    >
-      Proxima
-    </button>
   </div>
 </div>

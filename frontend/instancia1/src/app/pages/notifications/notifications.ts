@@ -2,7 +2,8 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { finalize } from 'rxjs/operators';
-import { NotificationDTO } from '../../models/notification.model';
+import { forkJoin } from 'rxjs';
+import { NotificationResponse, notificationTypeLabel } from '../../models/notification.model';
 import { NotificationService } from '../../services/notification/notification.service';
 
 @Component({
@@ -14,9 +15,9 @@ import { NotificationService } from '../../services/notification/notification.se
 })
 export class Notifications implements OnInit {
   loading = signal(false);
-  notifications = signal<NotificationDTO[]>([]);
+  notifications = signal<NotificationResponse[]>([]);
 
-  unreadCount = computed(() => this.notifications().filter(n => !n.readAt).length);
+  unreadCount = computed(() => this.notifications().filter(n => !n.read).length);
 
   constructor(private readonly notificationService: NotificationService) {}
 
@@ -27,7 +28,7 @@ export class Notifications implements OnInit {
   refresh(): void {
     this.loading.set(true);
     this.notificationService
-      .listMyNotifications()
+      .list()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: data => this.notifications.set(data ?? []),
@@ -35,29 +36,33 @@ export class Notifications implements OnInit {
       });
   }
 
-  markAsRead(notification: NotificationDTO): void {
-    if (!notification?.id || notification.readAt) return;
+  markAsRead(notification: NotificationResponse): void {
+    if (!notification?.id || notification.read) return;
 
     this.notificationService.markAsRead(notification.id).subscribe({
       next: () => {
-        const now = new Date().toISOString();
         this.notifications.update(list =>
-          list.map(n => (n.id === notification.id ? { ...n, readAt: now } : n))
+          list.map(n => (n.id === notification.id ? { ...n, read: true } : n))
         );
       },
       error: err => console.error('Erro ao marcar como lida:', err),
     });
   }
 
+  // Não há endpoint de "marcar todas" no backend; faz uma chamada por notificação não lida.
   markAllAsRead(): void {
-    if (this.unreadCount() <= 0) return;
+    const unread = this.notifications().filter(n => !n.read);
+    if (unread.length === 0) return;
 
-    this.notificationService.markAllAsRead().subscribe({
+    forkJoin(unread.map(n => this.notificationService.markAsRead(n.id))).subscribe({
       next: () => {
-        const now = new Date().toISOString();
-        this.notifications.update(list => list.map(n => (n.readAt ? n : { ...n, readAt: now })));
+        this.notifications.update(list => list.map(n => ({ ...n, read: true })));
       },
       error: err => console.error('Erro ao marcar todas como lidas:', err),
     });
+  }
+
+  typeLabel(type: string): string {
+    return notificationTypeLabel(type);
   }
 }

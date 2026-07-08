@@ -1,62 +1,70 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ReportService } from '../../services/report/report.service';
-import { ReportDTO } from '../../models/report.model';
-import { MatIconModule } from '@angular/material/icon';
+import { finalize } from 'rxjs/operators';
+import { ManifestationService } from '../../services/manifestation/manifestation.service';
+import { ManifestationResponse, manifestationStatusLabel } from '../../models/manifestation.model';
 
 @Component({
   selector: 'app-report-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './report-list.html',
   styleUrl: './report-list.css'
 })
 export class ReportList implements OnInit {
-  reports = signal<ReportDTO[]>([]);
+  readonly pageSize = 10;
 
-  reportsInAnalysis = computed(() => 
-    this.reports().filter(r => {
-      const s = r.status?.toUpperCase();
-      return s === 'PENDING' || s === 'PENDENTE';
-    }).length
-  );
+  manifestations = signal<ManifestationResponse[]>([]);
+  loading = signal(false);
+  page = signal(0);
+  totalPages = signal(0);
+  totalElements = signal(0);
 
-  reportsCompleted = computed(() => 
-    this.reports().filter(r => {
-      const s = r.status?.toUpperCase();
-      return s === 'ANALYZED' || s === 'ANALISADO';
-    }).length
-  );
-
-  constructor(private reportService: ReportService) {}
+  constructor(private readonly manifestationService: ManifestationService) {}
 
   ngOnInit(): void {
-    this.reportService.list().subscribe({
-      next: (data: ReportDTO[]) => {
-        this.reports.set(data);
-      },
-      error: (err: any) => {
-        console.error('Erro na listagem:', err);
-      }
-    });
+    this.loadPage();
   }
 
-  getStatusClass(status: string | undefined): string {
-    const s = status?.toUpperCase();
-    if (s === 'PENDING' || s === 'PENDENTE') return 'status-analysis';
-    if (s === 'ANALYZED' || s === 'ANALISADO') return 'status-completed';
-    return 'status-analysis';
+  loadPage(): void {
+    this.loading.set(true);
+    this.manifestationService
+      .listPaged(this.page(), this.pageSize)
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: page => {
+          this.manifestations.set(page.content);
+          this.totalPages.set(page.totalPages);
+          this.totalElements.set(page.totalElements);
+        },
+        error: err => console.error('Erro ao carregar manifestações:', err)
+      });
   }
 
-  downloadPdf(reportId: number): void {
-  this.reportService.exportarPdf(reportId).subscribe(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `relatorio-${reportId}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
+  previousPage(): void {
+    if (this.page() === 0 || this.loading()) return;
+    this.page.update(v => v - 1);
+    this.loadPage();
+  }
+
+  nextPage(): void {
+    if (this.page() + 1 >= this.totalPages() || this.loading()) return;
+    this.page.update(v => v + 1);
+    this.loadPage();
+  }
+
+  statusLabel(status: string): string {
+    return manifestationStatusLabel(status);
+  }
+
+  statusClass(status: string): string {
+    switch (status) {
+      case 'RESOLVED':
+      case 'CLOSED':
+        return 'status-completed';
+      default:
+        return 'status-analysis';
+    }
+  }
 }

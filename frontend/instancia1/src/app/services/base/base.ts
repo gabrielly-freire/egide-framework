@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-export abstract class BaseService<T> {
+export abstract class BaseService<TResponse, TRequest = TResponse> {
 
   constructor(
     protected http: HttpClient,
@@ -14,7 +14,7 @@ export abstract class BaseService<T> {
     return throwError(() => error.error?.message || 'Erro interno no servidor');
   }
 
-  list(page: number = 0, size: number = 10): Observable<T[]> {
+  list(page: number = 0, size: number = 10): Observable<TResponse[]> {
   const params = new HttpParams()
     .set('page', page.toString())
     .set('size', size.toString());
@@ -30,20 +30,20 @@ export abstract class BaseService<T> {
   );
 }
 
-  getById(id: number | string): Observable<T> {
-    return this.http.get<T>(`${this.url}/${id}`).pipe(
+  getById(id: number | string): Observable<TResponse> {
+    return this.http.get<TResponse>(`${this.url}/${id}`).pipe(
       catchError(err => this.handleError(err))
     );
   }
 
-  create(item: T): Observable<T> {
-    return this.http.post<T>(this.url, item).pipe(
+  create(item: TRequest): Observable<TResponse> {
+    return this.http.post<TResponse>(this.url, item).pipe(
       catchError(err => this.handleError(err))
     );
   }
 
-  update(id: number | string, item: T): Observable<T> {
-    return this.http.put<T>(`${this.url}/${id}`, item).pipe(
+  update(id: number | string, item: TRequest): Observable<TResponse> {
+    return this.http.put<TResponse>(`${this.url}/${id}`, item).pipe(
       catchError(err => this.handleError(err))
     );
   }
