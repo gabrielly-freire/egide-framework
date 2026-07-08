@@ -33,6 +33,12 @@ export class ManifestationService {
     return this.http.get<Page<ManifestationResponse>>(this.base, { params });
   }
 
+  /** Manifestações designadas ao analista autenticado — único endpoint acessível a quem não é ADMIN. */
+  listMine(page = 0, size = 10): Observable<Page<ManifestationResponse>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<Page<ManifestationResponse>>(`${this.base}/mine`, { params });
+  }
+
   update(id: number, request: Partial<ManifestationRequest>): Observable<ManifestationResponse> {
     return this.http.put<ManifestationResponse>(`${this.base}/${id}`, request);
   }

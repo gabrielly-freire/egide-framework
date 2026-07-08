@@ -194,8 +194,78 @@
               &nbsp;·&nbsp;
               <i class="bi bi-calendar me-1"></i>
               {{ tracked()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+              &nbsp;·&nbsp;
+              <i class="bi bi-arrow-repeat me-1"></i>
+              Recursos: {{ tracked()!.appealCount }}/{{ MAX_APPEALS }}
             </div>
+
+            @if (appealError()) {
+              <div class="alert alert-danger small mt-3 mb-0">{{ appealError() }}</div>
+            }
+
+            @if (canAppeal()) {
+              <button
+                class="btn btn-outline-warning btn-sm mt-3"
+                [disabled]="appealing()"
+                (click)="appeal()"
+              >
+                @if (appealing()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                } @else {
+                  <i class="bi bi-arrow-counterclockwise me-2"></i>
+                }
+                Registrar Recurso
+              </button>
+            }
           </div>
+
+          @if (canEvaluate(tracked()!.status)) {
+            <div class="evaluation-section mt-4">
+              <h4><i class="bi bi-star me-2"></i>Avalie o Atendimento</h4>
+
+              @if (evaluationError()) {
+                <div class="alert alert-danger small">{{ evaluationError() }}</div>
+              }
+
+              @if (loadingEvaluation()) {
+                <div class="spinner-border spinner-border-sm"></div>
+              } @else if (evaluation()) {
+                <div class="evaluation-box">
+                  <div class="stars">
+                    @for (n of ratings; track n) {
+                      <i class="bi" [class.bi-star-fill]="n <= evaluation()!.rating" [class.bi-star]="n > evaluation()!.rating"></i>
+                    }
+                  </div>
+                  @if (evaluation()!.comment) {
+                    <p class="mt-2 mb-0">{{ evaluation()!.comment }}</p>
+                  }
+                  <p class="text-muted small mt-2 mb-0">Obrigado pela sua avaliação!</p>
+                </div>
+              } @else {
+                <p class="text-muted small">Conte pra gente como foi o atendimento da sua manifestação.</p>
+                <form [formGroup]="evaluationForm" (ngSubmit)="createEvaluation()" novalidate>
+                  <div class="mb-3">
+                    <label class="form-label">Nota</label>
+                    <select class="form-select" formControlName="rating" style="max-width: 120px">
+                      @for (n of ratings; track n) {
+                        <option [value]="n">{{ n }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Comentário</label>
+                    <textarea class="form-control" formControlName="comment" rows="3"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-gov" [disabled]="savingEvaluation()">
+                    @if (savingEvaluation()) {
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    Enviar avaliação
+                  </button>
+                </form>
+              }
+            </div>
+          }
         }
       </div>
     }

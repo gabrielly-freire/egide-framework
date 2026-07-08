@@ -140,6 +140,23 @@
   border-left: 4px solid var(--gov-primary);
 }
 
+.evaluation-section {
+  border-top: 1px solid #dee2e6;
+  padding-top: 16px;
+}
+
+.evaluation-box {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.evaluation-box .stars i {
+  color: var(--gov-warning);
+  font-size: 1.3rem;
+  margin-right: 2px;
+}
+
 .protocol-label {
   font-size: 0.75rem;
   text-transform: uppercase;

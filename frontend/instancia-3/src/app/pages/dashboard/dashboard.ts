@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ManifestationService } from '../../services/manifestation.service';
+import { AuthService } from '../../services/auth.service';
 import { ManifestationResponse, STATUS_LABELS } from '../../models/manifestation.model';
 import { DatePipe } from '@angular/common';
 
@@ -12,6 +13,7 @@ import { DatePipe } from '@angular/common';
 })
 export class DashboardPage implements OnInit {
   private readonly manifestationService = inject(ManifestationService);
+  private readonly authService = inject(AuthService);
 
   protected readonly STATUS_LABELS = STATUS_LABELS;
 
@@ -21,7 +23,11 @@ export class DashboardPage implements OnInit {
   protected loading = signal(true);
 
   ngOnInit(): void {
-    this.manifestationService.list(0, 5).subscribe({
+    const page$ = this.authService.isAdmin()
+      ? this.manifestationService.list(0, 5)
+      : this.manifestationService.listMine(0, 5);
+
+    page$.subscribe({
       next: page => {
         this.total.set(page.totalElements);
         this.recent.set(page.content);

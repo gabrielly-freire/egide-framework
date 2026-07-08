@@ -70,7 +70,6 @@ export class ManifestationDetailPage implements OnInit {
 
   // Workflow actions
   protected advancing = signal(false);
-  protected appealing = signal(false);
   protected workflowError = signal('');
 
   // Designation
@@ -100,14 +99,9 @@ export class ManifestationDetailPage implements OnInit {
   protected savingDecision = signal(false);
   protected decisionError = signal('');
 
-  // Evaluation
+  // Evaluation (somente leitura — quem avalia é o cidadão, pelo portal público)
   protected evaluation = signal<ServiceEvaluationResponse | null>(null);
   protected loadingEvaluation = signal(true);
-  protected evaluationForm = this.fb.group({
-    rating: [5, [Validators.required, Validators.min(1), Validators.max(5)]],
-    comment: ['', Validators.maxLength(1000)],
-  });
-  protected savingEvaluation = signal(false);
   protected evaluationError = signal('');
 
   // Audit
@@ -160,12 +154,6 @@ export class ManifestationDetailPage implements OnInit {
     return status ? (NEXT_STATUS[status] ?? null) : null;
   }
 
-  canAppeal(): boolean {
-    const m = this.manifestation();
-    if (!m) return false;
-    return (m.status === 'IN_REVIEW' || m.status === 'RESOLVED') && m.appealCount < MAX_APPEALS;
-  }
-
   advance(): void {
     const next = this.nextStatus();
     if (!next) return;
@@ -180,21 +168,6 @@ export class ManifestationDetailPage implements OnInit {
       error: () => {
         this.workflowError.set('Não foi possível avançar o status.');
         this.advancing.set(false);
-      },
-    });
-  }
-
-  appeal(): void {
-    this.appealing.set(true);
-    this.workflowError.set('');
-    this.workflowService.appeal(this.manifestationId).subscribe({
-      next: updated => {
-        this.manifestation.set(updated);
-        this.appealing.set(false);
-      },
-      error: () => {
-        this.workflowError.set('Recurso não permitido neste momento.');
-        this.appealing.set(false);
       },
     });
   }
@@ -405,34 +378,6 @@ export class ManifestationDetailPage implements OnInit {
         this.loadingEvaluation.set(false);
       },
     });
-  }
-
-  createEvaluation(): void {
-    if (this.evaluationForm.invalid) {
-      this.evaluationForm.markAllAsTouched();
-      return;
-    }
-
-    this.savingEvaluation.set(true);
-    this.evaluationError.set('');
-    const { rating, comment } = this.evaluationForm.getRawValue();
-
-    this.evaluationService
-      .create({
-        manifestationId: this.manifestationId,
-        rating: rating!,
-        comment: comment || undefined,
-      })
-      .subscribe({
-        next: ev => {
-          this.evaluation.set(ev);
-          this.savingEvaluation.set(false);
-        },
-        error: () => {
-          this.evaluationError.set('Não foi possível registrar a avaliação.');
-          this.savingEvaluation.set(false);
-        },
-      });
   }
 
   // ---- Audit ----

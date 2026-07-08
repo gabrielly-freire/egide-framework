@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { ManifestationService } from '../../../services/manifestation.service';
+import { AuthService } from '../../../services/auth.service';
 import { ManifestationResponse, STATUS_LABELS, TYPE_LABELS } from '../../../models/manifestation.model';
 
 @Component({
@@ -13,6 +14,7 @@ import { ManifestationResponse, STATUS_LABELS, TYPE_LABELS } from '../../../mode
 })
 export class ManifestationListPage implements OnInit {
   private readonly manifestationService = inject(ManifestationService);
+  private readonly authService = inject(AuthService);
 
   protected readonly STATUS_LABELS = STATUS_LABELS;
   protected readonly TYPE_LABELS = TYPE_LABELS;
@@ -27,6 +29,7 @@ export class ManifestationListPage implements OnInit {
   protected pageSize = 10;
 
   protected searchProtocol = '';
+  protected readonly isAdmin = this.authService.isAdmin();
 
   ngOnInit(): void {
     this.load();
@@ -34,7 +37,11 @@ export class ManifestationListPage implements OnInit {
 
   load(page = 0): void {
     this.loading.set(true);
-    this.manifestationService.list(page, this.pageSize).subscribe({
+    const page$ = this.isAdmin
+      ? this.manifestationService.list(page, this.pageSize)
+      : this.manifestationService.listMine(page, this.pageSize);
+
+    page$.subscribe({
       next: res => {
         this.items.set(res.content);
         this.currentPage.set(res.number);
