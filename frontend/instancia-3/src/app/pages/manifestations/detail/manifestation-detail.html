@@ -110,21 +110,11 @@
                 }
               </button>
 
-              <button
-                class="btn btn-outline-warning w-100"
-                [disabled]="!canAppeal() || appealing()"
-                (click)="appeal()"
-              >
-                @if (appealing()) {
-                  <span class="spinner-border spinner-border-sm me-2"></span>
-                } @else {
-                  <i class="bi bi-arrow-counterclockwise me-2"></i>
-                }
-                Registrar Recurso ({{ manifestation()!.appealCount }}/{{ MAX_APPEALS }})
-              </button>
               <div class="form-text">
-                Recurso admitido em até {{ MAX_APPEALS }} instâncias administrativas, enquanto a
-                manifestação estiver em análise ou resolvida.
+                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                Recursos interpostos pelo cidadão: {{ manifestation()!.appealCount }}/{{ MAX_APPEALS }}.
+                O recurso é registrado pelo próprio cidadão, ao acompanhar o protocolo no portal
+                público.
               </div>
             </div>
           </div>
@@ -343,6 +333,11 @@
       <div class="detail-card">
         <h4><i class="bi bi-star me-2"></i>Avaliação do Atendimento</h4>
 
+        <p class="text-muted small">
+          A avaliação é registrada pelo próprio cidadão que abriu a manifestação, ao acompanhar o
+          protocolo no portal público.
+        </p>
+
         @if (evaluationError()) {
           <div class="alert alert-danger small">{{ evaluationError() }}</div>
         }
@@ -361,26 +356,7 @@
             }
           </div>
         } @else {
-          <form [formGroup]="evaluationForm" (ngSubmit)="createEvaluation()" novalidate>
-            <div class="mb-3">
-              <label class="form-label">Nota</label>
-              <select class="form-select" formControlName="rating" style="max-width: 120px">
-                @for (n of ratings; track n) {
-                  <option [value]="n">{{ n }}</option>
-                }
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Comentário</label>
-              <textarea class="form-control" formControlName="comment" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-gov" [disabled]="savingEvaluation()">
-              @if (savingEvaluation()) {
-                <span class="spinner-border spinner-border-sm me-2"></span>
-              }
-              Enviar avaliação
-            </button>
-          </form>
+          <p class="text-muted">O cidadão ainda não avaliou o atendimento desta manifestação.</p>
         }
       </div>
     }

@@ -8,6 +8,7 @@ export interface AnalystRequest {
 export interface AnalystResponse {
   id: number;
   name: string;
+  email: string;
   specialty: string;
   region: string;
   createdAt: string;
