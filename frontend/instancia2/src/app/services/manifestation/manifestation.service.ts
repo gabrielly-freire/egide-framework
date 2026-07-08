@@ -25,6 +25,20 @@ export interface Manifestation {
   updatedAt: string;
 }
 
+/** Parte (analista ou acusado) com a unidade organizacional — registro genérico do Core. */
+export interface Party {
+  id: number;
+  name: string;
+  unit: string;
+}
+
+/** Resultado da checagem de conflito de interesse. */
+export interface ConflictCheck {
+  manifestationId: number;
+  analystId: number;
+  hasConflict: boolean;
+}
+
 /** Resumo gerencial do Core (ManifestationSummaryReport). */
 export interface ManifestationSummary {
   totalManifestations: number;
@@ -64,5 +78,27 @@ export class ManifestationService {
 
   summary(): Observable<ManifestationSummary> {
     return this.http.get<ManifestationSummary>('/api/v1/reports/summary');
+  }
+
+  // ── Workflow (ponto variável) ───────────────────────────────────────────
+  advance(id: number | string): Observable<Manifestation> {
+    return this.http.post<Manifestation>(`/api/v1/workflow/${id}/advance`, {});
+  }
+
+  appeal(id: number | string): Observable<Manifestation> {
+    return this.http.post<Manifestation>(`/api/v1/workflow/${id}/appeal`, {});
+  }
+
+  // ── Conflito de interesse (ponto variável) ──────────────────────────────
+  createParty(body: { name: string; unit: string }): Observable<Party> {
+    return this.http.post<Party>('/api/v1/parties', body);
+  }
+
+  addAccusation(manifestationId: number, accusedPartyId: number): Observable<unknown> {
+    return this.http.post(`/api/v1/manifestations/${manifestationId}/accusations`, { accusedPartyId });
+  }
+
+  checkConflict(manifestationId: number, analystId: number): Observable<ConflictCheck> {
+    return this.http.get<ConflictCheck>(`/api/v1/designations/${manifestationId}/conflict/${analystId}`);
   }
 }

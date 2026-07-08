@@ -50,6 +50,21 @@ export const routes: Routes = [
         data: { roles: ['MANAGER', 'ADMIN'] }
       },
       {
+        path: 'manifestacoes/:id',
+        loadComponent: () =>
+          import('./pages/manifestation-detail/manifestation-detail').then(m => m.ManifestationDetail),
+        title: 'Égide - Detalhe da Manifestação',
+        canActivate: [roleGuard],
+        data: { roles: ['MANAGER', 'ADMIN'] }
+      },
+      {
+        path: 'conflito',
+        loadComponent: () => import('./pages/conflict/conflict').then(m => m.ConflictPage),
+        title: 'Égide - Conflito de Interesse',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] }
+      },
+      {
         path: 'usuarios',
         loadComponent: () => import('./pages/user-management/user-management').then(m => m.UserManagement),
         title: 'Égide - Usuários',

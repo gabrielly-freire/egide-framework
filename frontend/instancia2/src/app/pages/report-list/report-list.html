@@ -39,7 +39,8 @@
       <tbody>
         <tr *ngFor="let report of reports()">
           <td>
-            <span class="report-protocol">{{ report.protocolNumber }}</span>
+            <a class="report-protocol" [routerLink]="['/manifestacoes', report.id]"
+               style="color:#6366f1; text-decoration:none; font-weight:600;">{{ report.protocolNumber }}</a>
             <div class="report-title">{{ report.title }}</div>
           </td>
           <td>

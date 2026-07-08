@@ -28,6 +28,14 @@
     </a>
 
     <a *ngIf="hasAnyRole(['ADMIN'])"
+       routerLink="/conflito"
+       routerLinkActive="active-link"
+       class="nav-item">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>Conflito de Interesse</span>
+    </a>
+
+    <a *ngIf="hasAnyRole(['ADMIN'])"
        routerLink="/usuarios"
        routerLinkActive="active-link"
        class="nav-item">
