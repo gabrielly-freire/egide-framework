@@ -22,7 +22,7 @@ class ComplianceConflictOfInterestStrategyTest {
     private static final Long MANIFESTATION_ID = 100L;
 
     @Mock
-    private ManifestationAccusationRepository accusationRepository;
+    private ComplianceAccusationRepository accusationRepository;
 
     @Mock
     private AppUserRepository userRepository;

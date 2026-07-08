@@ -1,0 +1,466 @@
+@startuml pontos-variaveis-visao-geral
+
+title Visão geral — Serviços, Pontos Fixos e Pontos Variáveis (Strategy / Template Method)
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+' ======================================================================
+' PONTOS FIXOS — os 6 pontos fixos do framework (interface + impl)
+' Presentes em TODAS as instâncias, sem variação de comportamento.
+' Alguns (Manifestação, Categorização, Designação, Workflow) delegam a
+' decisão de negócio a um Ponto Variável; os demais são 100% fixos.
+' ======================================================================
+package "br.imd.ufrn.core.service — Pontos Fixos" <<Core - Pontos Fixos>> #E8F4FD {
+
+    interface ManifestationService {
+        + create(request): ManifestationResponse
+        + findById(id): ManifestationResponse
+        + findByProtocolNumber(protocolNumber): ManifestationResponse
+        + findAll(pageable): Page<ManifestationResponse>
+        + update(id, request): ManifestationResponse
+        + delete(id): void
+    }
+    class ManifestationServiceImpl {
+        - anonymizationStrategy: AnonymizationStrategy
+        + create(request): ManifestationResponse
+        + update(id, request): ManifestationResponse
+    }
+    note bottom of ManifestationServiceImpl
+        Ponto fixo: "Registro de manifestações".
+        Delega grau de sigilo ao Ponto Variável
+        AnonymizationStrategy.
+    end note
+
+    interface ServiceEvaluationService {
+        + create(request): ServiceEvaluationResponse
+        + findById(id): ServiceEvaluationResponse
+        + findByManifestationId(manifestationId): ServiceEvaluationResponse
+        + delete(id): void
+    }
+    class ServiceEvaluationServiceImpl
+    note bottom of ServiceEvaluationServiceImpl
+        Ponto fixo: "Avaliação de atendimento".
+        100% fixo — não delega a nenhum
+        Ponto Variável.
+    end note
+
+    interface ResponsibleAssignmentService {
+        + assign(request): ResponsibleAssignmentResponse
+        + findById(id): ResponsibleAssignmentResponse
+        + findByManifestationId(manifestationId): ResponsibleAssignmentResponse
+        + unassign(manifestationId): void
+    }
+    class ResponsibleAssignmentServiceImpl
+    note bottom of ResponsibleAssignmentServiceImpl
+        Ponto fixo: "Designação de responsável"
+        (mecanismo manual, POST /v1/assignments).
+        100% fixo.
+    end note
+
+    interface DesignationService {
+        + autoAssign(manifestationId): ResponsibleAssignmentResponse
+        + hasConflict(manifestationId, analystId): boolean
+    }
+    class DesignationServiceImpl {
+        - designationStrategy: DesignationStrategy
+        - conflictOfInterestStrategy: ConflictOfInterestStrategy
+        + autoAssign(manifestationId): ResponsibleAssignmentResponse
+        + hasConflict(manifestationId, analystId): boolean
+    }
+    note bottom of DesignationServiceImpl
+        Mecanismo de designação AUTOMÁTICA.
+        Delega a regra de atribuição e o critério
+        de impedimento aos Pontos Variáveis
+        DesignationStrategy e ConflictOfInterestStrategy.
+    end note
+
+    interface DecisionRecordService {
+        + create(request): DecisionRecordResponse
+        + findById(id): DecisionRecordResponse
+        + findAllByManifestationId(manifestationId): List<DecisionRecordResponse>
+        + delete(id): void
+    }
+    class DecisionRecordServiceImpl
+    note bottom of DecisionRecordServiceImpl
+        Ponto fixo: "Registro de decisões e pareceres".
+        100% fixo.
+    end note
+
+    interface AuditEntryService {
+        + create(request): AuditEntryResponse
+        + findById(id): AuditEntryResponse
+        + findAllByManifestationId(manifestationId, pageable): Page<AuditEntryResponse>
+    }
+    class AuditEntryServiceImpl
+    note bottom of AuditEntryServiceImpl
+        Ponto fixo: "Histórico / auditoria".
+        Imutável (sem soft delete). 100% fixo.
+    end note
+
+    interface ReportService {
+        + summary(): ManifestationSummaryReport
+        + summaryByPeriod(from, to): ManifestationSummaryReport
+    }
+    class ReportServiceImpl
+    note bottom of ReportServiceImpl
+        Ponto fixo: "Geração de relatórios".
+        100% fixo.
+    end note
+
+    interface CategorizationService {
+        + categorize(manifestationId): ManifestationResponse
+    }
+    class CategorizationServiceImpl {
+        - categorizationStrategy: CategorizationStrategy
+        + categorize(manifestationId): ManifestationResponse
+    }
+    note bottom of CategorizationServiceImpl
+        Mecanismo de persistência da categorização
+        (gancho: ManifestationCreatedEvent).
+        Delega o critério de classificação ao
+        Ponto Variável CategorizationStrategy.
+    end note
+
+    interface WorkflowService {
+        + advance(manifestationId): ManifestationResponse
+        + appeal(manifestationId): ManifestationResponse
+    }
+    class WorkflowServiceImpl {
+        - workflowTemplate: WorkflowTemplate
+        + advance(manifestationId): ManifestationResponse
+        + appeal(manifestationId): ManifestationResponse
+    }
+    note bottom of WorkflowServiceImpl
+        Mecanismo fixo de transição/persistência de status.
+        Delega a sequência de fases, prazos e regra
+        de recurso ao Ponto Variável WorkflowTemplate.
+    end note
+
+    ManifestationServiceImpl           ..|> ManifestationService
+    ServiceEvaluationServiceImpl       ..|> ServiceEvaluationService
+    ResponsibleAssignmentServiceImpl   ..|> ResponsibleAssignmentService
+    DesignationServiceImpl             ..|> DesignationService
+    DecisionRecordServiceImpl          ..|> DecisionRecordService
+    AuditEntryServiceImpl              ..|> AuditEntryService
+    ReportServiceImpl                  ..|> ReportService
+    CategorizationServiceImpl          ..|> CategorizationService
+    WorkflowServiceImpl                ..|> WorkflowService
+}
+
+' ======================================================================
+' DOMÍNIO — entidades JPA dos pontos fixos (Core)
+' ======================================================================
+package "br.imd.ufrn.core.domain" <<Core - Domínio>> #EAF2F8 {
+
+    abstract class BaseEntity {
+        + id: Long
+        + createdAt: LocalDateTime
+        + updatedAt: LocalDateTime
+        + active: Boolean
+    }
+
+    class Manifestation {
+        + protocolNumber: String
+        + title: String
+        + description: String
+        + type: String
+        + status: ManifestationStatus
+        + category: String
+        + riskLevel: String
+        + affectedRegion: String
+        + appealCount: Integer
+    }
+
+    class ServiceEvaluation {
+        + manifestationId: Long
+        + rating: Integer
+        + comment: String
+    }
+
+    class ResponsibleAssignment {
+        + manifestationId: Long
+        + responsibleId: Long
+        + assignedById: Long
+    }
+
+    class DecisionRecord {
+        + manifestationId: Long
+        + authorId: Long
+        + type: DecisionType
+        + content: String
+    }
+
+    class AuditEntry {
+        + id: Long
+        + manifestationId: Long
+        + actorId: Long
+        + action: String
+        + description: String
+        + occurredAt: LocalDateTime
+    }
+    note bottom of AuditEntry
+        Não estende BaseEntity:
+        imutável, sem soft delete.
+    end note
+
+    BaseEntity <|-- Manifestation
+    BaseEntity <|-- ServiceEvaluation
+    BaseEntity <|-- ResponsibleAssignment
+    BaseEntity <|-- DecisionRecord
+}
+
+' ======================================================================
+' PONTOS VARIÁVEIS — contratos definidos pelo Core (interface / abstract)
+' ======================================================================
+package "br.imd.ufrn.core.anonymization" <<Core - Contrato>> #FDF2E9 {
+    interface AnonymizationStrategy {
+        + anonymize(context: AnonymizationContext): AnonymizationResult
+    }
+    class TransparentAnonymizationStrategy {
+        + anonymize(context): AnonymizationResult
+    }
+    note bottom of TransparentAnonymizationStrategy
+        Default: não altera título/descrição.
+        @ConditionalOnMissingBean
+    end note
+}
+
+package "br.imd.ufrn.core.categorization" <<Core - Contrato>> #FDF2E9 {
+    interface CategorizationStrategy {
+        + categorize(context: CategorizationContext): CategorizationResult
+    }
+    class NoOpCategorizationStrategy {
+        + categorize(context): CategorizationResult
+    }
+    note bottom of NoOpCategorizationStrategy
+        Default: category/riskLevel = null.
+        @ConditionalOnMissingBean
+    end note
+}
+
+package "br.imd.ufrn.core.conflict" <<Core - Contrato>> #FDF2E9 {
+    interface ConflictOfInterestStrategy {
+        + hasConflict(context: ConflictOfInterestContext): boolean
+    }
+    class NoConflictOfInterestStrategy {
+        + hasConflict(context): boolean
+    }
+    note bottom of NoConflictOfInterestStrategy
+        Default: sempre false.
+        @ConditionalOnMissingBean
+    end note
+}
+
+package "br.imd.ufrn.core.designation" <<Core - Contrato>> #FDF2E9 {
+    interface DesignationStrategy {
+        + resolve(context: DesignationContext): Long
+    }
+    class ManualDesignationStrategy {
+        + resolve(context): Long
+    }
+    note bottom of ManualDesignationStrategy
+        Default: sempre null (designação manual).
+        @ConditionalOnMissingBean
+    end note
+}
+
+package "br.imd.ufrn.core.workflow" <<Core - Contrato>> #FDF2E9 {
+    abstract class WorkflowTemplate {
+        + {final} advance(manifestation: Manifestation): WorkflowStepResult
+        + {final} appeal(manifestation: Manifestation): WorkflowStepResult
+        # {abstract} resolveNextStatus(current: ManifestationStatus): ManifestationStatus
+        # {abstract} resolveAppealStatus(current: ManifestationStatus): ManifestationStatus
+        # {abstract} isAppealAllowed(manifestation: Manifestation): boolean
+        # {abstract} deadlineFor(status: ManifestationStatus): Duration
+    }
+    class DefaultWorkflowTemplate {
+        # resolveNextStatus(current): ManifestationStatus
+        # resolveAppealStatus(current): ManifestationStatus
+        # isAppealAllowed(manifestation): boolean
+        # deadlineFor(status): Duration
+    }
+    note bottom of DefaultWorkflowTemplate
+        Default: REGISTERED→IN_REVIEW→RESOLVED.
+        Recurso nunca permitido; sem prazo.
+        @ConditionalOnMissingBean
+    end note
+}
+
+' ======================================================================
+' INSTÂNCIA 1 — Compliance Corporativo
+' ======================================================================
+package "backend/instancia-1 (br.imd.ufrn)" <<Instância 1 - Compliance>> #FEF9E7 {
+    class ComplianceAnonymizationStrategy {
+        + anonymize(context): AnonymizationResult
+    }
+    class AiCategorizationStrategy {
+        + categorize(context): CategorizationResult
+    }
+    class ComplianceConflictOfInterestStrategy {
+        + hasConflict(context): boolean
+    }
+    note bottom of ComplianceConflictOfInterestStrategy
+        Designação e Workflow não são
+        sobrescritos — usam os defaults
+        do Core (Manual / Default).
+    end note
+
+    class AppUser {
+        + email: String
+        + name: String
+        + username: String
+        + password: String
+        + role: Role
+    }
+    class Department {
+        + name: String
+        + acronym: String
+    }
+    class ManifestationAccusation1 as "ManifestationAccusation" {
+        + manifestationId: Long
+        + accusedUserId: Long
+    }
+    BaseEntity <|-- AppUser
+    BaseEntity <|-- Department
+    BaseEntity <|-- ManifestationAccusation1
+    AppUser --> Department : department
+}
+
+' ======================================================================
+' INSTÂNCIA 2 — Ouvidoria Universitária
+' ======================================================================
+package "backend/instancia-2 (br.imd.ufrn)" <<Instância 2 - Universidade>> #EAFAF1 {
+    class PartialAnonymizationStrategy {
+        + anonymize(context): AnonymizationResult
+    }
+    class UniversityCategorizationStrategy {
+        + categorize(context): CategorizationResult
+    }
+    class SameUnitConflictOfInterestStrategy {
+        + hasConflict(context): boolean
+    }
+    class UniversityWorkflowTemplate {
+        # resolveNextStatus(current): ManifestationStatus
+        # resolveAppealStatus(current): ManifestationStatus
+        # isAppealAllowed(manifestation): boolean
+        # deadlineFor(status): Duration
+    }
+    note bottom of UniversityWorkflowTemplate
+        Designação não é sobrescrita —
+        usa o default Manual do Core.
+    end note
+
+    class AcademicMember {
+        + name: String
+        + unit: String
+    }
+    class ManifestationAccusation2 as "ManifestationAccusation" {
+        + manifestationId: Long
+        + accusedMemberId: Long
+    }
+    BaseEntity <|-- AcademicMember
+    BaseEntity <|-- ManifestationAccusation2
+}
+
+' ======================================================================
+' INSTÂNCIA 3 — Atendimento Público (LAI)
+' ======================================================================
+package "backend/instancia-3 (br.imd.ufrn.atendimento)" <<Instância 3 - Atendimento Público>> #F9EBEA {
+    class PublicServiceCategorizationStrategy {
+        + categorize(context): CategorizationResult
+    }
+    class LegalConflictStrategy {
+        + hasConflict(context): boolean
+    }
+    class RegionDesignationStrategy {
+        + resolve(context): Long
+    }
+    class PublicServiceWorkflowTemplate {
+        # resolveNextStatus(current): ManifestationStatus
+        # resolveAppealStatus(current): ManifestationStatus
+        # isAppealAllowed(manifestation): boolean
+        # deadlineFor(status): Duration
+    }
+    note bottom of PublicServiceCategorizationStrategy
+        Anonimização não é sobrescrita —
+        usa o default Transparent do Core.
+    end note
+
+    class Analyst {
+        + name: String
+        + specialty: String
+        + region: String
+        + email: String
+        + passwordHash: String
+        + role: AnalystRole
+    }
+    class LegalImpediment {
+        + manifestationId: Long
+        + analystId: Long
+        + reason: ImpedimentReason
+    }
+    BaseEntity <|-- Analyst
+    BaseEntity <|-- LegalImpediment
+    LegalImpediment --> Analyst : analystId (FK)
+}
+
+' ======================================================================
+' RELAÇÕES — Pontos fixos persistem/consultam as entidades de domínio
+' ======================================================================
+ManifestationServiceImpl         ..>  Manifestation
+ServiceEvaluationServiceImpl     ..>  ServiceEvaluation
+ResponsibleAssignmentServiceImpl ..>  ResponsibleAssignment
+DecisionRecordServiceImpl        ..>  DecisionRecord
+AuditEntryServiceImpl            ..>  AuditEntry
+CategorizationServiceImpl        ..>  Manifestation
+DesignationServiceImpl           ..>  ResponsibleAssignment
+DesignationServiceImpl           ..>  Manifestation
+WorkflowServiceImpl              ..>  Manifestation
+ReportServiceImpl                ..>  Manifestation
+
+' ======================================================================
+' RELAÇÕES — Pontos fixos usam os contratos dos pontos variáveis (dependência)
+' ======================================================================
+ManifestationServiceImpl   -->  AnonymizationStrategy       : anonymize()
+CategorizationServiceImpl  -->  CategorizationStrategy      : categorize()
+DesignationServiceImpl     -->  DesignationStrategy         : resolve()
+DesignationServiceImpl     -->  ConflictOfInterestStrategy  : hasConflict()
+WorkflowServiceImpl        -->  WorkflowTemplate             : advance() / appeal()
+
+' ======================================================================
+' RELAÇÕES — Estratégias de conflito/designação consultam dados próprios
+' ======================================================================
+ComplianceConflictOfInterestStrategy ..>  ManifestationAccusation1 : consulta
+SameUnitConflictOfInterestStrategy   ..>  ManifestationAccusation2 : consulta
+SameUnitConflictOfInterestStrategy   ..>  AcademicMember           : consulta
+LegalConflictStrategy                ..>  LegalImpediment          : consulta
+RegionDesignationStrategy            ..>  Analyst                  : consulta
+
+' ======================================================================
+' RELAÇÕES — Implementações dos contratos (realização / herança)
+' ======================================================================
+TransparentAnonymizationStrategy   ..|>  AnonymizationStrategy
+ComplianceAnonymizationStrategy    ..|>  AnonymizationStrategy
+PartialAnonymizationStrategy       ..|>  AnonymizationStrategy
+
+NoOpCategorizationStrategy         ..|>  CategorizationStrategy
+AiCategorizationStrategy           ..|>  CategorizationStrategy
+UniversityCategorizationStrategy   ..|>  CategorizationStrategy
+PublicServiceCategorizationStrategy ..|> CategorizationStrategy
+
+NoConflictOfInterestStrategy       ..|>  ConflictOfInterestStrategy
+ComplianceConflictOfInterestStrategy ..|> ConflictOfInterestStrategy
+SameUnitConflictOfInterestStrategy ..|>  ConflictOfInterestStrategy
+LegalConflictStrategy              ..|>  ConflictOfInterestStrategy
+
+ManualDesignationStrategy          ..|>  DesignationStrategy
+RegionDesignationStrategy          ..|>  DesignationStrategy
+
+DefaultWorkflowTemplate            --|>  WorkflowTemplate
+UniversityWorkflowTemplate         --|>  WorkflowTemplate
+PublicServiceWorkflowTemplate      --|>  WorkflowTemplate
+
+@enduml

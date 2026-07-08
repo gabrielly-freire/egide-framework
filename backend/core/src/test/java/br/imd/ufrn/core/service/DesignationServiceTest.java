@@ -18,7 +18,9 @@ import br.imd.ufrn.core.dto.ResponsibleAssignmentResponse;
 import br.imd.ufrn.core.exception.AutoAssignmentUnavailableException;
 import br.imd.ufrn.core.exception.ConflictOfInterestException;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
+import br.imd.ufrn.core.persistence.ManifestationAccusationRepository;
 import br.imd.ufrn.core.persistence.ManifestationRepository;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,9 @@ class DesignationServiceTest {
     @Mock
     private ConflictOfInterestStrategy conflictOfInterestStrategy;
 
+    @Mock
+    private ManifestationAccusationRepository accusationRepository;
+
     @InjectMocks
     private DesignationServiceImpl service;
 
@@ -62,6 +67,7 @@ class DesignationServiceTest {
     void autoAssign_deveCriarDesignacao_quandoEstrategiaRetornaResponsavel() {
         when(manifestationRepository.findById(1L)).thenReturn(Optional.of(manifestation));
         when(designationStrategy.resolve(any(DesignationContext.class))).thenReturn(10L);
+        when(accusationRepository.findByManifestationId(1L)).thenReturn(List.of());
         when(conflictOfInterestStrategy.hasConflict(any(ConflictOfInterestContext.class))).thenReturn(false);
         when(assignmentService.assign(any(ResponsibleAssignmentRequest.class))).thenReturn(assignmentResponse);
 
@@ -86,6 +92,7 @@ class DesignationServiceTest {
     void autoAssign_deveLancarExcecao_quandoAnalystaPossuiConflito() {
         when(manifestationRepository.findById(1L)).thenReturn(Optional.of(manifestation));
         when(designationStrategy.resolve(any(DesignationContext.class))).thenReturn(10L);
+        when(accusationRepository.findByManifestationId(1L)).thenReturn(List.of());
         when(conflictOfInterestStrategy.hasConflict(any(ConflictOfInterestContext.class))).thenReturn(true);
 
         assertThatThrownBy(() -> service.autoAssign(1L))
@@ -105,6 +112,7 @@ class DesignationServiceTest {
     @Test
     void hasConflict_deveRetornarTrue_quandoEstrategiaDetectaConflito() {
         when(manifestationRepository.findById(1L)).thenReturn(Optional.of(manifestation));
+        when(accusationRepository.findByManifestationId(1L)).thenReturn(List.of());
         when(conflictOfInterestStrategy.hasConflict(any(ConflictOfInterestContext.class))).thenReturn(true);
 
         assertThat(service.hasConflict(1L, 10L)).isTrue();
@@ -113,6 +121,7 @@ class DesignationServiceTest {
     @Test
     void hasConflict_deveRetornarFalse_quandoSemConflito() {
         when(manifestationRepository.findById(1L)).thenReturn(Optional.of(manifestation));
+        when(accusationRepository.findByManifestationId(1L)).thenReturn(List.of());
         when(conflictOfInterestStrategy.hasConflict(any(ConflictOfInterestContext.class))).thenReturn(false);
 
         assertThat(service.hasConflict(1L, 10L)).isFalse();

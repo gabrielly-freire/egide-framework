@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ComplianceConflictOfInterestStrategy implements ConflictOfInterestStrategy {
 
-    private final ManifestationAccusationRepository accusationRepository;
+    private final ComplianceAccusationRepository accusationRepository;
     private final AppUserRepository userRepository;
 
     @Override

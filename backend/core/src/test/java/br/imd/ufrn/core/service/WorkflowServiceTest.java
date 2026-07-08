@@ -50,7 +50,7 @@ class WorkflowServiceTest {
 
         response = new ManifestationResponse(
                 1L, "2026-ABCDE12345", "Título", "Descrição",
-                "RECLAMAÇÃO", ManifestationStatus.IN_REVIEW, null, null, null, null, null);
+                "RECLAMAÇÃO", ManifestationStatus.IN_REVIEW, null, null, null, null, null, null, null);
     }
 
     @Test

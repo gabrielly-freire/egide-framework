@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
  * Gancho da Instância 2: ao registrar uma manifestação, dispara sua categorização.
  *
  * <p>O Core publica {@link ManifestationCreatedEvent} em {@code ManifestationService.create()}, mas
- * não o consome — cabe à instância reagir. Aqui a escuta é <b>síncrona</b>: como a triagem é uma
- * heurística em memória ({@link UniversityCategorizationStrategy}), sem chamada externa, ela roda
+ * não o consome — cabe à instância reagir. Aqui a escuta é <b>síncrona</b>: como a triagem é feita
+ * em memória por palavras-chave ({@link UniversityCategorizationStrategy}), sem chamada externa, ela roda
  * dentro da mesma transação do registro e a categoria já retorna na resposta do POST. A Instância 1,
  * que depende de IA externa (lenta), usa escuta assíncrona.
  */

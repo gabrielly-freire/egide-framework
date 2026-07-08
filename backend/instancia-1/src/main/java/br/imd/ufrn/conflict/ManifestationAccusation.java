@@ -16,7 +16,9 @@ import org.hibernate.annotations.SQLRestriction;
  * <p>{@code manifestationId} referencia a manifestação do Core; {@code accusedUserId} referencia
  * um {@link br.imd.ufrn.user.AppUser}.
  */
-@Entity
+// Nome de entidade JPA explícito: o Core ganhou sua própria br.imd.ufrn.core.domain.ManifestationAccusation
+// (ver TODO em EgideApplication) e o Hibernate não aceita duas entidades com o mesmo nome simples.
+@Entity(name = "ComplianceManifestationAccusation")
 @Table(name = "manifestation_accusation")
 @SQLRestriction("active = true")
 @Getter

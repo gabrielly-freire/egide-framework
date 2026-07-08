@@ -1,0 +1,69 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-header">
+      <i class="bi bi-shield-check logo-icon"></i>
+      <h1>Ouvidoria Pública</h1>
+      <p>Acesso Restrito — Analistas</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (error()) {
+        <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          {{ error() }}
+        </div>
+      }
+
+      <div class="mb-3">
+        <label for="email" class="form-label">E-mail institucional</label>
+        <input
+          id="email"
+          type="email"
+          class="form-control"
+          [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched"
+          formControlName="email"
+          placeholder="seu@sus.gov.br"
+          autocomplete="email"
+        />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <div class="invalid-feedback">E-mail inválido.</div>
+        }
+      </div>
+
+      <div class="mb-4">
+        <label for="password" class="form-label">Senha</label>
+        <div class="input-group">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            class="form-control"
+            [class.is-invalid]="form.controls.password.invalid && form.controls.password.touched"
+            formControlName="password"
+            autocomplete="current-password"
+          />
+          <button type="button" class="btn btn-outline-secondary" (click)="togglePassword()">
+            <i [class]="'bi ' + (showPassword() ? 'bi-eye-slash' : 'bi-eye')"></i>
+          </button>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <div class="invalid-feedback">Senha obrigatória.</div>
+          }
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-gov w-100" [disabled]="loading()">
+        @if (loading()) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Entrando…
+        } @else {
+          <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+        }
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <a routerLink="/portal">
+        <i class="bi bi-globe me-1"></i>Ir para o Portal do Cidadão
+      </a>
+    </div>
+  </div>
+</div>

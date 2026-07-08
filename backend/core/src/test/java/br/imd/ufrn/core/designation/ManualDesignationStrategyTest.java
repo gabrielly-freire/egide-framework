@@ -10,14 +10,14 @@ class ManualDesignationStrategyTest {
 
     @Test
     void resolve_deveRetornarNull_indicandoDesignacaoManual() {
-        DesignationContext context = new DesignationContext(1L, "DENUNCIA");
+        DesignationContext context = new DesignationContext(1L, "DENUNCIA", null);
 
         assertThat(strategy.resolve(context)).isNull();
     }
 
     @Test
     void resolve_deveRetornarNull_paraDiferentesTipos() {
-        assertThat(strategy.resolve(new DesignationContext(1L, "RECLAMACAO"))).isNull();
-        assertThat(strategy.resolve(new DesignationContext(2L, "SUGESTAO"))).isNull();
+        assertThat(strategy.resolve(new DesignationContext(1L, "RECLAMACAO", null))).isNull();
+        assertThat(strategy.resolve(new DesignationContext(2L, "SUGESTAO", "Sul"))).isNull();
     }
 }

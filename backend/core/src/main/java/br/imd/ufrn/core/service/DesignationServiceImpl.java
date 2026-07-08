@@ -9,8 +9,11 @@ import br.imd.ufrn.core.dto.ResponsibleAssignmentRequest;
 import br.imd.ufrn.core.dto.ResponsibleAssignmentResponse;
 import br.imd.ufrn.core.exception.AutoAssignmentUnavailableException;
 import br.imd.ufrn.core.exception.ConflictOfInterestException;
+import br.imd.ufrn.core.domain.ManifestationAccusation;
 import br.imd.ufrn.core.exception.ManifestationNotFoundException;
+import br.imd.ufrn.core.persistence.ManifestationAccusationRepository;
 import br.imd.ufrn.core.persistence.ManifestationRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DesignationServiceImpl implements DesignationService {
 
     private final ManifestationRepository manifestationRepository;
+    private final ManifestationAccusationRepository accusationRepository;
     private final ResponsibleAssignmentService assignmentService;
     private final DesignationStrategy designationStrategy;
     private final ConflictOfInterestStrategy conflictOfInterestStrategy;
@@ -31,7 +35,7 @@ public class DesignationServiceImpl implements DesignationService {
                 .orElseThrow(() -> new ManifestationNotFoundException(manifestationId));
 
         DesignationContext designationContext = new DesignationContext(
-                manifestationId, manifestation.getType());
+                manifestationId, manifestation.getType(), manifestation.getAffectedRegion());
         Long responsibleId = designationStrategy.resolve(designationContext);
 
         if (responsibleId == null) {
@@ -39,7 +43,8 @@ public class DesignationServiceImpl implements DesignationService {
         }
 
         ConflictOfInterestContext conflictContext = new ConflictOfInterestContext(
-                manifestationId, responsibleId, manifestation.getType());
+                manifestationId, responsibleId, manifestation.getType(),
+                accusedPartyIds(manifestationId));
         if (conflictOfInterestStrategy.hasConflict(conflictContext)) {
             throw new ConflictOfInterestException(responsibleId, manifestationId);
         }
@@ -55,7 +60,15 @@ public class DesignationServiceImpl implements DesignationService {
                 .orElseThrow(() -> new ManifestationNotFoundException(manifestationId));
 
         ConflictOfInterestContext context = new ConflictOfInterestContext(
-                manifestationId, analystId, manifestation.getType());
+                manifestationId, analystId, manifestation.getType(),
+                accusedPartyIds(manifestationId));
         return conflictOfInterestStrategy.hasConflict(context);
+    }
+
+    /** Ids das partes acusadas da manifestação, carregados do registro genérico do Core. */
+    private List<Long> accusedPartyIds(Long manifestationId) {
+        return accusationRepository.findByManifestationId(manifestationId).stream()
+                .map(ManifestationAccusation::getAccusedPartyId)
+                .toList();
     }
 }

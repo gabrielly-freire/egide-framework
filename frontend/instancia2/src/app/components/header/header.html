@@ -1,0 +1,16 @@
+<nav class="egide-header">
+  <div class="header-logo">
+    <span class="logo-text">ÉGIDE<span class="logo-dot">.IA</span></span>
+  </div>
+
+  <div class="header-actions">
+    <a class="notification-button" routerLink="/notificacoes" title="Notificações">
+      <mat-icon>notifications</mat-icon>
+      <span class="notification-badge" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
+    </a>
+    <div class="user-avatar">
+      <img src="assets/avatar.png" alt="Avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+      <span class="avatar-fallback">A</span>
+    </div>
+  </div>
+</nav>

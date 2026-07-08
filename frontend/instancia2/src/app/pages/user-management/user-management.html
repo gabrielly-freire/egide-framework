@@ -1,0 +1,107 @@
+<div class="users-container">
+  <div class="page-header">
+    <div>
+      <span class="subtitle">Painel Administrativo</span>
+      <h1 class="title">Gerenciamento de Usuários</h1>
+    </div>
+    <button class="btn-primary" type="button" (click)="openCreateForm()">
+      + NOVO USUÁRIO
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="feedback error">{{ error() }}</div>
+  }
+  @if (success()) {
+    <div class="feedback success">{{ success() }}</div>
+  }
+
+  @if (showForm()) {
+    <form class="card-form" [formGroup]="userForm" (ngSubmit)="saveUser()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Nome Completo</label>
+          <input id="name" type="text" class="form-control" formControlName="name" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" class="form-control" formControlName="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="username">Login</label>
+          <input id="username" type="text" class="form-control" formControlName="username" autocomplete="username" />
+        </div>
+
+        <div class="form-group">
+          <label for="role">Perfil</label>
+          <select id="role" class="form-control" formControlName="role">
+            @for (option of roleOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input
+            id="password"
+            type="password"
+            class="form-control"
+            formControlName="password"
+            autocomplete="new-password"
+          />
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn btn-cancel" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="btn btn-submit" [disabled]="saving() || userForm.invalid">
+          {{ saving() ? 'SALVANDO...' : 'SALVAR USUÁRIO' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="table-container">
+    <div class="table-header">
+      <h2>Usuários cadastrados</h2>
+      <span class="table-count">Total: {{ users().length }}</span>
+    </div>
+
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Nome / Email</th>
+          <th>Login</th>
+          <th>Perfil</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr>
+            <td colspan="3" class="empty-row">Carregando usuários...</td>
+          </tr>
+        } @else {
+          @for (user of users(); track user.id ?? user.username) {
+            <tr>
+              <td>
+                <div class="primary-text">{{ user.name }}</div>
+                <div class="secondary-text">{{ user.email }}</div>
+              </td>
+              <td>{{ user.username }}</td>
+              <td>
+                <span class="badge-role">{{ roleLabel(user.role) }}</span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="empty-row">Nenhum usuário encontrado.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
